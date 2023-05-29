@@ -34,6 +34,8 @@ class Opcode(Enum):
     JABSR = auto()
     JRELI = auto()
     JRELR = auto()
+    ADD = auto()
+    ADDI = auto()
 
     # Pseudo-instructions
     HALT = auto()
@@ -136,6 +138,18 @@ class AssemblyParser:
         if self.consume_identifier("jrelr"):
             rs = self.parse_register()
             return Instruction(Opcode.JRELR, [rs])
+
+        if self.consume_identifier("add"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            rs = self.parse_register()
+            return Instruction(Opcode.ADD, [rd, rs])
+
+        if self.consume_identifier("addi"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            imm = self.parse_immediate()
+            return Instruction(Opcode.ADDI, [rd, imm])
 
         # Pseudo-instructions
         if self.consume_identifier("halt"):
@@ -297,6 +311,20 @@ class AssemblyPrinter:
             self.print_operand(inst.operands[0])
             return
 
+        if inst.opcode == Opcode.ADD:
+            self.print_opcode("add ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
+            return
+
+        if inst.opcode == Opcode.ADDI:
+            self.print_opcode("addi ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
+            return
+
         # Pseudo-instructions
         if inst.opcode == Opcode.HALT:
             self.print_opcode("halt")
@@ -402,6 +430,18 @@ class InstructionEncoder:
         if inst.opcode == Opcode.JRELR:
             self.encode_bits(0, 8, 0x01)
             self.encode_rs(inst.operands[0])
+            return
+
+        if inst.opcode == Opcode.ADD:
+            self.encode_bits(0, 4, 0x4)
+            self.encode_rd(inst.operands[0])
+            self.encode_rs(inst.operands[1])
+            return
+
+        if inst.opcode == Opcode.ADDI:
+            self.encode_bits(0, 4, 0xC)
+            self.encode_rd(inst.operands[0])
+            self.encode_imm8(inst.operands[1])
             return
 
         # Pseudo-instructions

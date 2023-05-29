@@ -1,6 +1,8 @@
 ........ ......00  -- stepping mode
 ........ ......01  -- relative jump
 ........ ......10  -- absolute jump
+........ .....0..  -- writeback move
+........ .....1..  -- writeback ALU
 ........ ....0...  -- operand 2 is reg
 ........ ....1...  -- operand 2 is immediate
 ........ dddd....  -- reg operand 1 ("rd")
@@ -14,51 +16,8 @@ iiiiiiii dddd1000  iid8  ldi rd, imm
 iiiiiiii 00001001  ii09  jreli +imm
 0000ssss 00000001  0s01  jrelr rs
 0000ssss 00000010  0s02  jabsr rs16
+0000ssss dddd0100  0sd4  add rd, rs
+iiiiiiii dddd1100  iidC  addi rd, imm
 
 pseudo-instructions:
 00000000 00001001  0009  halt
-
-
-0018  ldi r0, 0x00
-0120  mv r1, r0
-0230  mv r2, r1
-0340  mv r3, r2
-0450  mv r4, r3
-0560  mv r5, r4
-0670  mv r6, r5
-1209  jreli 0x12
-
-0x20:
-F018  ldi r0, 0xF0
-5528  ldi r1, 0x55
-AA38  ldi r2, 0xAA
-0F48  ldi r3, 0x0F
-8158  ldi r4, 0x81
-4268  ldi r5, 0x42
-FF78  ldi r6, 0xFF
-0618  ldi r0, 6
-0101  jrelr r0  # +6
-0000  nop
-0000  nop
-4018  ldi r0, 0x40
-F028  ldi r1, 0xF0
-0102  jabsr r0r1  # 0xF040
-
-0xF040:
-0118  ldi r0, 0x01
-0228  ldi r1, 0x02
-0438  ldi r2, 0x04
-0848  ldi r3, 0x08
-1058  ldi r4, 0x10
-2068  ldi r5, 0x20
-4078  ldi r6, 0x40
-0000  nop
-8018  ldi r0, 0x80
-4028  ldi r1, 0x40
-2038  ldi r2, 0x20
-1048  ldi r3, 0x10
-0858  ldi r4, 0x08
-0468  ldi r5, 0x04
-0278  ldi r6, 0x02
-0000  nop
-E009  jreli -32  # 0xF040

@@ -13,6 +13,11 @@
     jreli +18  # 0x0020
 
 .org 0x20
+    # Addition.
+    addi r0, 9
+    addi r1, 10
+    add r1, r0
+
     # Load some interesting pattern.s
     ldi r0, 0xF0
     ldi r1, 0x12
