@@ -1,5 +1,5 @@
     # Clear registers to zero.
-    ldi r0, 0x00  # load initial zero
+    ldi r0, 0
     mv r1, r0
     mv r2, r1
     mv r3, r2

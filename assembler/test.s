@@ -18,7 +18,7 @@
     addi r1, 10
     add r1, r0
 
-    # Load some interesting pattern.s
+    # Load some interesting patterns.
     ldi r0, 0xF0
     ldi r1, 0x12
     ldi r2, 0xBA
