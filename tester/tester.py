@@ -128,12 +128,12 @@ num_mismatches = 0
 
 
 # Check that addition works.
-def check(lhs: int, rhs: int, ci: int):
+def check(lhs: int, rhs: int, sub: int):
     # Write tester outputs / ALU inputs.
     outputs = [0] * 8
     outputs[0] = lhs  # outputs 0 to 7
     outputs[2] = rhs  # outputs 16 to 23
-    outputs[4] = ci  # output 32
+    outputs[4] = sub  # output 32
     tester.write_output_chain(outputs)
 
     # Read tester inputs / ALU outputs (with pullup).
@@ -147,7 +147,7 @@ def check(lhs: int, rhs: int, ci: int):
     inputs_pd = tester.read_input_chain(8)
 
     # Check the outputs.
-    value = lhs + rhs + ci
+    value = lhs + (~rhs & 0xFF) + 1 if sub else lhs + rhs
     result_exp, result_act = check_output(value & 0xFF, inputs_pu[0],
                                           inputs_pd[0])
     co_exp, co_act = check_output((value >> 8) & 0x1,
@@ -155,7 +155,7 @@ def check(lhs: int, rhs: int, ci: int):
                                   inputs_pd[2] & 0x1,
                                   width=1)
 
-    print(f"{lhs:08b} + {rhs:08b} + {ci:01b} = " +
+    print(f"{lhs:08b} {rhs:08b} {sub:01b} = " +
           f"{co_act} {result_act} ({co_exp} {result_exp})")
 
 

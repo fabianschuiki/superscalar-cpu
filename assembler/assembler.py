@@ -35,7 +35,7 @@ class Opcode(Enum):
     JRELI = auto()
     JRELR = auto()
     ADD = auto()
-    ADDI = auto()
+    SUB = auto()
 
     # Pseudo-instructions
     HALT = auto()
@@ -145,11 +145,11 @@ class AssemblyParser:
             rs = self.parse_register()
             return Instruction(Opcode.ADD, [rd, rs])
 
-        if self.consume_identifier("addi"):
+        if self.consume_identifier("sub"):
             rd = self.parse_register()
             self.parse_regex(r',')
-            imm = self.parse_immediate()
-            return Instruction(Opcode.ADDI, [rd, imm])
+            rs = self.parse_register()
+            return Instruction(Opcode.SUB, [rd, rs])
 
         # Pseudo-instructions
         if self.consume_identifier("halt"):
@@ -318,8 +318,8 @@ class AssemblyPrinter:
             self.print_operand(inst.operands[1])
             return
 
-        if inst.opcode == Opcode.ADDI:
-            self.print_opcode("addi ")
+        if inst.opcode == Opcode.SUB:
+            self.print_opcode("sub ")
             self.print_operand(inst.operands[0])
             self.emit(", ")
             self.print_operand(inst.operands[1])
@@ -436,12 +436,14 @@ class InstructionEncoder:
             self.encode_bits(0, 4, 0x4)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
+            self.encode_bits(12, 1, 0)
             return
 
-        if inst.opcode == Opcode.ADDI:
-            self.encode_bits(0, 4, 0xC)
+        if inst.opcode == Opcode.SUB:
+            self.encode_bits(0, 4, 0x4)
             self.encode_rd(inst.operands[0])
-            self.encode_imm8(inst.operands[1])
+            self.encode_rs(inst.operands[1])
+            self.encode_bits(12, 1, 1)
             return
 
         # Pseudo-instructions

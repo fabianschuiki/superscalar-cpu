@@ -8,6 +8,8 @@
 ........ dddd....  -- reg operand 1 ("rd")
 ....ssss ........  -- reg operand 2 ("rs", "rs16")
 iiiiiiii ........  -- immediate
+...0.... ........  -- ALU add
+...1.... ........  -- ALU sub
 
 instructions:
 00000000 00000000  0000  nop
@@ -17,7 +19,7 @@ iiiiiiii 00001001  ii09  jreli +imm
 0000ssss 00000001  0s01  jrelr rs
 0000ssss 00000010  0s02  jabsr rs16
 0000ssss dddd0100  0sd4  add rd, rs
-iiiiiiii dddd1100  iidC  addi rd, imm
+0001ssss dddd0100  1sd4  sub rd, rs
 
 pseudo-instructions:
 00000000 00001001  0009  halt
