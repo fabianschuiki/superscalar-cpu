@@ -18,6 +18,8 @@
     ldi r1, 10
     add r1, r0
     sub r0, r1
+    addc r2, r3
+    subc r4, r5
 
     # Load some interesting patterns.
     ldi r0, 0xF0

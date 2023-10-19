@@ -36,6 +36,8 @@ class Opcode(Enum):
     JRELR = auto()
     ADD = auto()
     SUB = auto()
+    ADDC = auto()
+    SUBC = auto()
 
     # Pseudo-instructions
     HALT = auto()
@@ -150,6 +152,18 @@ class AssemblyParser:
             self.parse_regex(r',')
             rs = self.parse_register()
             return Instruction(Opcode.SUB, [rd, rs])
+
+        if self.consume_identifier("addc"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            rs = self.parse_register()
+            return Instruction(Opcode.ADDC, [rd, rs])
+
+        if self.consume_identifier("subc"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            rs = self.parse_register()
+            return Instruction(Opcode.SUBC, [rd, rs])
 
         # Pseudo-instructions
         if self.consume_identifier("halt"):
@@ -325,6 +339,20 @@ class AssemblyPrinter:
             self.print_operand(inst.operands[1])
             return
 
+        if inst.opcode == Opcode.ADDC:
+            self.print_opcode("addc ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
+            return
+
+        if inst.opcode == Opcode.SUBC:
+            self.print_opcode("subc ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
+            return
+
         # Pseudo-instructions
         if inst.opcode == Opcode.HALT:
             self.print_opcode("halt")
@@ -436,14 +464,28 @@ class InstructionEncoder:
             self.encode_bits(0, 4, 0x4)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
-            self.encode_bits(12, 1, 0)
+            self.encode_bits(12, 2, 0b00)
             return
 
         if inst.opcode == Opcode.SUB:
             self.encode_bits(0, 4, 0x4)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
-            self.encode_bits(12, 1, 1)
+            self.encode_bits(12, 2, 0b01)
+            return
+
+        if inst.opcode == Opcode.ADDC:
+            self.encode_bits(0, 4, 0x4)
+            self.encode_rd(inst.operands[0])
+            self.encode_rs(inst.operands[1])
+            self.encode_bits(12, 2, 0b10)
+            return
+
+        if inst.opcode == Opcode.SUBC:
+            self.encode_bits(0, 4, 0x4)
+            self.encode_rd(inst.operands[0])
+            self.encode_rs(inst.operands[1])
+            self.encode_bits(12, 2, 0b11)
             return
 
         # Pseudo-instructions
