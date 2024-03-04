@@ -20,6 +20,11 @@
     sub r0, r1
     addc r2, r3
     subc r4, r5
+    neg r0, r1
+    shll r0
+    shlc r1
+    shrl r2
+    shrc r3
 
     # Load some interesting patterns.
     ldi r0, 0xF0
