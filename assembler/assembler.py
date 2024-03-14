@@ -34,6 +34,7 @@ class Opcode(Enum):
     JABSR = auto()
     JRELI = auto()
     JRELR = auto()
+    NOT = auto()
     NEG = auto()
     ADD = auto()
     SUB = auto()
@@ -43,6 +44,7 @@ class Opcode(Enum):
     SHLC = auto()
     SHRL = auto()
     SHRC = auto()
+    SHRA = auto()
 
     # Pseudo-instructions
     HALT = auto()
@@ -146,6 +148,12 @@ class AssemblyParser:
             rs = self.parse_register()
             return Instruction(Opcode.JRELR, [rs])
 
+        if self.consume_identifier("not"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            rs = self.parse_register()
+            return Instruction(Opcode.NOT, [rd, rs])
+
         if self.consume_identifier("neg"):
             rd = self.parse_register()
             self.parse_regex(r',')
@@ -191,6 +199,10 @@ class AssemblyParser:
         if self.consume_identifier("shrc"):
             rd = self.parse_register()
             return Instruction(Opcode.SHRC, [rd])
+
+        if self.consume_identifier("shra"):
+            rd = self.parse_register()
+            return Instruction(Opcode.SHRA, [rd])
 
         # Pseudo-instructions
         if self.consume_identifier("halt"):
@@ -352,6 +364,13 @@ class AssemblyPrinter:
             self.print_operand(inst.operands[0])
             return
 
+        if inst.opcode == Opcode.NOT:
+            self.print_opcode("not ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
+            return
+
         if inst.opcode == Opcode.NEG:
             self.print_opcode("neg ")
             self.print_operand(inst.operands[0])
@@ -404,6 +423,11 @@ class AssemblyPrinter:
 
         if inst.opcode == Opcode.SHRC:
             self.print_opcode("shrc ")
+            self.print_operand(inst.operands[0])
+            return
+
+        if inst.opcode == Opcode.SHRA:
+            self.print_opcode("shra ")
             self.print_operand(inst.operands[0])
             return
 
@@ -514,63 +538,76 @@ class InstructionEncoder:
             self.encode_rs(inst.operands[0])
             return
 
-        if inst.opcode == Opcode.NEG:
-            self.encode_bits(0, 4, 0x4)
-            self.encode_rd(inst.operands[0])
-            self.encode_rs(inst.operands[1])
-            self.encode_bits(12, 4, 0b0001)
-            return
-
-        if inst.opcode == Opcode.ADD:
+        if inst.opcode == Opcode.NOT:
             self.encode_bits(0, 4, 0x4)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
             self.encode_bits(12, 4, 0b0100)
             return
 
-        if inst.opcode == Opcode.SUB:
+        if inst.opcode == Opcode.NEG:
             self.encode_bits(0, 4, 0x4)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
             self.encode_bits(12, 4, 0b0101)
             return
 
+        if inst.opcode == Opcode.ADD:
+            self.encode_bits(0, 4, 0x4)
+            self.encode_rd(inst.operands[0])
+            self.encode_rs(inst.operands[1])
+            self.encode_bits(12, 4, 0b0000)
+            return
+
+        if inst.opcode == Opcode.SUB:
+            self.encode_bits(0, 4, 0x4)
+            self.encode_rd(inst.operands[0])
+            self.encode_rs(inst.operands[1])
+            self.encode_bits(12, 4, 0b0010)
+            return
+
         if inst.opcode == Opcode.ADDC:
             self.encode_bits(0, 4, 0x4)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
-            self.encode_bits(12, 4, 0b0110)
+            self.encode_bits(12, 4, 0b0001)
             return
 
         if inst.opcode == Opcode.SUBC:
             self.encode_bits(0, 4, 0x4)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
-            self.encode_bits(12, 4, 0b0111)
+            self.encode_bits(12, 4, 0b0011)
             return
 
         if inst.opcode == Opcode.SHLL:
             self.encode_bits(0, 4, 0x4)
             self.encode_rd(inst.operands[0])
-            self.encode_bits(12, 4, 0b1000)
+            self.encode_bits(12, 4, 0b0110)
             return
 
         if inst.opcode == Opcode.SHLC:
             self.encode_bits(0, 4, 0x4)
             self.encode_rd(inst.operands[0])
-            self.encode_bits(12, 4, 0b1010)
+            self.encode_bits(12, 4, 0b0111)
             return
 
         if inst.opcode == Opcode.SHRL:
             self.encode_bits(0, 4, 0x4)
             self.encode_rd(inst.operands[0])
-            self.encode_bits(12, 4, 0b1100)
+            self.encode_bits(12, 4, 0b1000)
             return
 
         if inst.opcode == Opcode.SHRC:
             self.encode_bits(0, 4, 0x4)
             self.encode_rd(inst.operands[0])
-            self.encode_bits(12, 4, 0b1110)
+            self.encode_bits(12, 4, 0b1001)
+            return
+
+        if inst.opcode == Opcode.SHRA:
+            self.encode_bits(0, 4, 0x4)
+            self.encode_rd(inst.operands[0])
+            self.encode_bits(12, 4, 0b1010)
             return
 
         # Pseudo-instructions

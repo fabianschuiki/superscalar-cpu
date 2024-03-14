@@ -1,0 +1,18 @@
+GAL16V8
+alu-decoder
+
+Clock  F0  F1  F2  F3      NC    NC    NC    NC    GND
+/OE    NC  NC  NC  InvRHS  SOp1  SOp0  COp1  COp0  VCC
+
+
+InvRHS = /F3 * /F2 * F1  +  /F3 * F2 * /F1
+SOp0 = /F2
+SOp1 = /F3 * F2 * F1  +  F3 * /F2
+COp0 = /F3 * /F2 * /F1 * F0  +  /F3 * /F2 * F1  +  /F3 * F2 * F0  +  F3 * /F2 * /F1 * F0
+COp1 = /F3 * /F2 * F0  +  /F3 * F2 * F1 * F0  +  F3 * /F2 * /F1 * F0  +  F3 * /F2 * F1 * /F0
+
+
+DESCRIPTION
+
+The decoder logic for ALU operations. Translates from a 4 bit opcode provided by
+the instruction decoder to the control signals in the ALU.

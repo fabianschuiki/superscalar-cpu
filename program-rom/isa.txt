@@ -8,14 +8,17 @@
 ........ dddd....  -- reg operand 1 ("rd")
 ....ssss ........  -- reg operand 2 ("rs", "rs16")
 iiiiiiii ........  -- immediate
-..00.... ........  -- ALU COp 0: CI=0  RHS=rs
-..01.... ........  -- ALU COp 1: CI=1  RHS=not(rs)
-..10.... ........  -- ALU COp 2: CI=CF RHS=rs
-..11.... ........  -- ALU COp 3: CI=CF RHS=not(rs)
-00...... ........  -- ALU SOp 0: LHS=0          AddCI=CI CO=AddCO
-01...... ........  -- ALU SOp 1: LHS=rd         AddCI=CI CO=AddCO
-10...... ........  -- ALU SOp 2: LHS=shl(rd,CI) AddCI=0  CO=rd[7]
-11...... ........  -- ALU SOp 3: LHS=shr(CI,rd) AddCI=0  CO=rd[0]
+0000.... ........  -- ALU op: ADD
+0001.... ........  -- ALU op: ADDC
+0010.... ........  -- ALU op: SUB
+0011.... ........  -- ALU op: SUBC
+0100.... ........  -- ALU op: NOT
+0101.... ........  -- ALU op: NEG
+0110.... ........  -- ALU op: SHLL
+0111.... ........  -- ALU op: SHLC
+1000.... ........  -- ALU op: SHRL
+1001.... ........  -- ALU op: SHRC
+1010.... ........  -- ALU op: SHRA
 
 instructions:
 00000000 00000000  0000  nop
@@ -24,15 +27,17 @@ iiiiiiii dddd1000  iid8  ldi rd, imm
 iiiiiiii 00001001  ii09  jreli +imm
 0000ssss 00000001  0s01  jrelr rs
 0000ssss 00000010  0s02  jabsr rs16
-0001ssss dddd0100  1sd4  neg rd, rs
-0100ssss dddd0100  4sd4  add rd, rs
-0101ssss dddd0100  5sd4  sub rd, rs
-0110ssss dddd0100  6sd4  addc rd, rs
-0111ssss dddd0100  7sd4  subc rd, rs
-10000000 dddd0100  80d4  shll rd
-10100000 dddd0100  A0d4  shlc rd
-11000000 dddd0100  C0d4  shrl rd
-11100000 dddd0100  E0d4  shrc rd
+0000ssss dddd0100  0sd4  add rd, rs
+0001ssss dddd0100  1sd4  addc rd, rs
+0010ssss dddd0100  2sd4  sub rd, rs
+0011ssss dddd0100  3sd4  subc rd, rs
+0100ssss dddd0100  4sd4  not rd, rs
+0101ssss dddd0100  5sd4  neg rd, rs
+01100000 dddd0100  60d4  shll rd
+01110000 dddd0100  70d4  shlc rd
+10000000 dddd0100  80d4  shrl rd
+10010000 dddd0100  90d4  shrc rd
+10100000 dddd0100  A0d4  shra rd
 
 pseudo-instructions:
 00000000 00001001  0009  halt
