@@ -1,19 +1,27 @@
-Op    Func  COp  SOp  InvRHS
+Op     Func   COp       SOp       LOp
 
-ADD   0000  00   01   0
-ADDC  0001  11   01   0
-SUB   0010  01   01   1
-SUBC  0011  11   01   1
-NOT   0100  00   00   1
-NEG   0101  01   00   1
-SHLL  0110  00   10   0
-SHLC  0111  11   10   0
-SHRL  1000  00   11   0
-SHRC  1001  11   11   0
-SHRA  1010  10   11   0
+ADD    0000   00 ZERO   01 RD     1010 RS
+ADDC   0001   11 CF     01 RD     1010 RS
+SUB    0010   01 ONE    01 RD     0101 ~RS
+SUBC   0011   11 CF     01 RD     0101 ~RS
+NOT    0100   00 ZERO   00 ZERO   0011 ~RD
+NEG    0101   01 ONE    00 ZERO   0011 ~RD
+SHLL   0110   00 ZERO   10 SHL    0000 ZERO
+SHLC   0111   11 CF     10 SHL    0000 ZERO
+SHRL   1000   00 ZERO   11 SHR    0000 ZERO
+SHRC   1001   11 CF     11 SHR    0000 ZERO
+SHRA   1010   10 SIGN   11 SHR    0000 ZERO
+AND    1101   00 ZERO   00 ZERO   1000 AND
+OR     1110   00 ZERO   00 ZERO   1110 OR
+XOR    1111   00 ZERO   00 ZERO   0110 XOR
 
-InvRHS = /F3 * /F2 * F1  +  /F3 * F2 * /F1
+LOp0 = /F3 * /F2 * F1  +  /F3 * F2 * /F1
+LOp1 = /F3 * /F1  +  F3 * F2 * F1
+LOp2 = /F3 * /F2 * F1  +  F3 * F2 * F1
+LOp3 = /F3 * /F2 * /F1  +  F3 * F2 * /F1 * F0  +  F3 * F2 * F1 * /F0
+
 SOp0 = /F2
 SOp1 = /F3 * F2 * F1  +  F3 * /F2
-COp0 = /F3 * /F2 * /F1 * F0  +  /F3 * /F2 * F1  +  /F3 * F2 * F0  +  F3 * /F2 * /F1 * F0
+
+COp0 = /F2 * /F1 * F0  +  /F3 * /F2 * F1  +  /F3 * F2 * F0
 COp1 = /F3 * /F2 * F0  +  /F3 * F2 * F1 * F0  +  F3 * /F2 * /F1 * F0  +  F3 * /F2 * F1 * /F0

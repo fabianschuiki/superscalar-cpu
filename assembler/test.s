@@ -20,13 +20,16 @@
     sub r0, r1
     addc r2, r3
     subc r4, r5
-    not r0, r1
-    neg r0, r1
+    not r0
+    neg r0
     shll r0
     shlc r1
     shrl r2
     shrc r3
     shra r4
+    and r0, r1
+    or r2, r3
+    xor r4, r5
 
     # Load some interesting patterns.
     ldi r0, 0xF0

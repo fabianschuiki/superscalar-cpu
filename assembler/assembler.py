@@ -45,6 +45,9 @@ class Opcode(Enum):
     SHRL = auto()
     SHRC = auto()
     SHRA = auto()
+    AND = auto()
+    OR = auto()
+    XOR = auto()
 
     # Pseudo-instructions
     HALT = auto()
@@ -150,15 +153,11 @@ class AssemblyParser:
 
         if self.consume_identifier("not"):
             rd = self.parse_register()
-            self.parse_regex(r',')
-            rs = self.parse_register()
-            return Instruction(Opcode.NOT, [rd, rs])
+            return Instruction(Opcode.NOT, [rd])
 
         if self.consume_identifier("neg"):
             rd = self.parse_register()
-            self.parse_regex(r',')
-            rs = self.parse_register()
-            return Instruction(Opcode.NEG, [rd, rs])
+            return Instruction(Opcode.NEG, [rd])
 
         if self.consume_identifier("add"):
             rd = self.parse_register()
@@ -203,6 +202,24 @@ class AssemblyParser:
         if self.consume_identifier("shra"):
             rd = self.parse_register()
             return Instruction(Opcode.SHRA, [rd])
+
+        if self.consume_identifier("and"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            rs = self.parse_register()
+            return Instruction(Opcode.AND, [rd, rs])
+
+        if self.consume_identifier("or"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            rs = self.parse_register()
+            return Instruction(Opcode.OR, [rd, rs])
+
+        if self.consume_identifier("xor"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            rs = self.parse_register()
+            return Instruction(Opcode.XOR, [rd, rs])
 
         # Pseudo-instructions
         if self.consume_identifier("halt"):
@@ -367,15 +384,11 @@ class AssemblyPrinter:
         if inst.opcode == Opcode.NOT:
             self.print_opcode("not ")
             self.print_operand(inst.operands[0])
-            self.emit(", ")
-            self.print_operand(inst.operands[1])
             return
 
         if inst.opcode == Opcode.NEG:
             self.print_opcode("neg ")
             self.print_operand(inst.operands[0])
-            self.emit(", ")
-            self.print_operand(inst.operands[1])
             return
 
         if inst.opcode == Opcode.ADD:
@@ -429,6 +442,27 @@ class AssemblyPrinter:
         if inst.opcode == Opcode.SHRA:
             self.print_opcode("shra ")
             self.print_operand(inst.operands[0])
+            return
+
+        if inst.opcode == Opcode.AND:
+            self.print_opcode("and ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
+            return
+
+        if inst.opcode == Opcode.OR:
+            self.print_opcode("or ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
+            return
+
+        if inst.opcode == Opcode.XOR:
+            self.print_opcode("xor ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
             return
 
         # Pseudo-instructions
@@ -541,14 +575,12 @@ class InstructionEncoder:
         if inst.opcode == Opcode.NOT:
             self.encode_bits(0, 4, 0x4)
             self.encode_rd(inst.operands[0])
-            self.encode_rs(inst.operands[1])
             self.encode_bits(12, 4, 0b0100)
             return
 
         if inst.opcode == Opcode.NEG:
             self.encode_bits(0, 4, 0x4)
             self.encode_rd(inst.operands[0])
-            self.encode_rs(inst.operands[1])
             self.encode_bits(12, 4, 0b0101)
             return
 
@@ -608,6 +640,27 @@ class InstructionEncoder:
             self.encode_bits(0, 4, 0x4)
             self.encode_rd(inst.operands[0])
             self.encode_bits(12, 4, 0b1010)
+            return
+
+        if inst.opcode == Opcode.AND:
+            self.encode_bits(0, 4, 0x4)
+            self.encode_rd(inst.operands[0])
+            self.encode_rs(inst.operands[1])
+            self.encode_bits(12, 4, 0b1101)
+            return
+
+        if inst.opcode == Opcode.OR:
+            self.encode_bits(0, 4, 0x4)
+            self.encode_rd(inst.operands[0])
+            self.encode_rs(inst.operands[1])
+            self.encode_bits(12, 4, 0b1110)
+            return
+
+        if inst.opcode == Opcode.XOR:
+            self.encode_bits(0, 4, 0x4)
+            self.encode_rd(inst.operands[0])
+            self.encode_rs(inst.operands[1])
+            self.encode_bits(12, 4, 0b1111)
             return
 
         # Pseudo-instructions
