@@ -6,6 +6,8 @@
 ........ ....0...  -- operand 2 is reg
 ........ ....1...  -- operand 2 is immediate
 ........ dddd....  -- reg operand 1 ("rd")
+........ 0.......  -- reg operand 1 write enabled
+........ 1.......  -- reg operand 1 write disabled
 ....ssss ........  -- reg operand 2 ("rs", "rs16")
 iiiiiiii ........  -- immediate
 0000.... ........  -- ALU op: ADD
@@ -19,6 +21,7 @@ iiiiiiii ........  -- immediate
 1000.... ........  -- ALU op: SHRL
 1001.... ........  -- ALU op: SHRC
 1010.... ........  -- ALU op: SHRA
+1100.... ........  -- ALU op: FSWAP
 1101.... ........  -- ALU op: AND
 1110.... ........  -- ALU op: OR
 1111.... ........  -- ALU op: XOR
@@ -44,6 +47,9 @@ iiiiiiii 00001001  ii09  jreli +imm
 1101ssss dddd0100  Dsd4  and rd, rs
 1110ssss dddd0100  Esd4  or rd, rs
 1111ssss dddd0100  Fsd4  xor rd, rs
+0010ssss 1ddd0100  2s!4  cmp rd, rs
+1101ssss 1ddd0100  Ds!4  test rd, rs
+11000000 dddd0100  C0d4  fswap rd
 
 pseudo-instructions:
 00000000 00001001  0009  halt

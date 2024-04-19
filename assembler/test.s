@@ -30,6 +30,9 @@
     and r0, r1
     or r2, r3
     xor r4, r5
+    cmp r0, r1
+    test r2, r2
+    fswap r3
 
     # Load some interesting patterns.
     ldi r0, 0xF0

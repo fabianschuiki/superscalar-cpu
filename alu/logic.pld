@@ -1,14 +1,15 @@
 GAL16V8
 alu-logic
 
-NC   RD3  RD2  RD1  RD0  RS3  RS2  RS1  RS0  GND
-L0   L1   L2   L3   Z0   Z1   Z2   Z3   NC   VCC
+NC   RD3  RD2  RD1  RD0  RS3  RS2  RS1  RS0    GND
+L0   L1   L2   L3   Z0   Z1   Z2   Z3   FSwap  VCC
 
 
 Z0 = /RD0 * /RS0 * L0 + /RD0 * RS0 * L1 + RD0 * /RS0 * L2 + RD0 * RS0 * L3
 Z1 = /RD1 * /RS1 * L0 + /RD1 * RS1 * L1 + RD1 * /RS1 * L2 + RD1 * RS1 * L3
 Z2 = /RD2 * /RS2 * L0 + /RD2 * RS2 * L1 + RD2 * /RS2 * L2 + RD2 * RS2 * L3
 Z3 = /RD3 * /RS3 * L0 + /RD3 * RS3 * L1 + RD3 * /RS3 * L2 + RD3 * RS3 * L3
+FSwap = L3 * L2 * L1 * L0
 
 
 DESCRIPTION

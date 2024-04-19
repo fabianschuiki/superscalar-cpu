@@ -43,7 +43,7 @@ Pin 16 = SOp1         XOR = 1   AC1 = 0
 Pin 15 = LOp0         XOR = 1   AC1 = 0
  32  ---- x--- -x-- -x-- ---- ---- ---- ----
  33  ---- -x-- x--- -x-- ---- ---- ---- ----
- 34  xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx
+ 34  -x-- -x-- x--- x--- ---- ---- ---- ----
  35  xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx
  36  xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx
  37  xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx
@@ -53,7 +53,7 @@ Pin 15 = LOp0         XOR = 1   AC1 = 0
 Pin 14 = LOp1         XOR = 1   AC1 = 0
  40  ---- -x-- ---- -x-- ---- ---- ---- ----
  41  ---- x--- x--- x--- ---- ---- ---- ----
- 42  xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx
+ 42  -x-- -x-- x--- x--- ---- ---- ---- ----
  43  xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx
  44  xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx
  45  xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx
@@ -63,7 +63,7 @@ Pin 14 = LOp1         XOR = 1   AC1 = 0
 Pin 13 = LOp2         XOR = 1   AC1 = 0
  48  ---- x--- -x-- -x-- ---- ---- ---- ----
  49  ---- x--- x--- x--- ---- ---- ---- ----
- 50  xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx
+ 50  -x-- -x-- x--- x--- ---- ---- ---- ----
  51  xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx
  52  xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx
  53  xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx
@@ -73,7 +73,7 @@ Pin 13 = LOp2         XOR = 1   AC1 = 0
 Pin 12 = LOp3         XOR = 1   AC1 = 0
  56  ---- -x-- -x-- -x-- ---- ---- ---- ----
  57  x--- -x-- x--- x--- ---- ---- ---- ----
- 58  -x-- x--- x--- x--- ---- ---- ---- ----
+ 58  -x-- ---- x--- x--- ---- ---- ---- ----
  59  xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx
  60  xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx
  61  xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx

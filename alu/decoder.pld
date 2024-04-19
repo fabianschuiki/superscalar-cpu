@@ -5,10 +5,10 @@ NC  F0    F1    F2    F3    NC    NC    NC    NC    GND
 NC  LOp3  LOp2  LOp1  LOp0  SOp1  SOp0  COp1  COp0  VCC
 
 
-LOp0 = /F3 * /F2 * F1  +  /F3 * F2 * /F1
-LOp1 = /F3 * /F1  +  F3 * F2 * F1
-LOp2 = /F3 * /F2 * F1  +  F3 * F2 * F1
-LOp3 = /F3 * /F2 * /F1  +  F3 * F2 * /F1 * F0  +  F3 * F2 * F1 * /F0
+LOp0 = /F3 * /F2 * F1  +  /F3 * F2 * /F1  +  F3 * F2 * /F1 * /F0
+LOp1 = /F3 * /F1  +  F3 * F2 * F1  +  F3 * F2 * /F1 * /F0
+LOp2 = /F3 * /F2 * F1  +  F3 * F2 * F1  +  F3 * F2 * /F1 * /F0
+LOp3 = /F3 * /F2 * /F1  +  F3 * F2 * /F1 * F0  +  F3 * F2 * /F0
 
 SOp0 = /F2
 SOp1 = /F3 * F2 * F1  +  F3 * /F2

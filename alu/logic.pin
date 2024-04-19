@@ -20,6 +20,6 @@
   16   | Z1       | Output
   17   | Z2       | Output
   18   | Z3       | Output
-  19   | NC       | NC
+  19   | FSwap    | Output
   20   | VCC      | VCC
 

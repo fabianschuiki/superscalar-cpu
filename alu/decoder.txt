@@ -11,14 +11,15 @@ SHLC   0111   11 CF     10 SHL    0000 ZERO
 SHRL   1000   00 ZERO   11 SHR    0000 ZERO
 SHRC   1001   11 CF     11 SHR    0000 ZERO
 SHRA   1010   10 SIGN   11 SHR    0000 ZERO
+FSWAP  1100   00 ZERO   00 ZERO   1111 FSWAP
 AND    1101   00 ZERO   00 ZERO   1000 AND
 OR     1110   00 ZERO   00 ZERO   1110 OR
 XOR    1111   00 ZERO   00 ZERO   0110 XOR
 
-LOp0 = /F3 * /F2 * F1  +  /F3 * F2 * /F1
-LOp1 = /F3 * /F1  +  F3 * F2 * F1
-LOp2 = /F3 * /F2 * F1  +  F3 * F2 * F1
-LOp3 = /F3 * /F2 * /F1  +  F3 * F2 * /F1 * F0  +  F3 * F2 * F1 * /F0
+LOp0 = /F3 * /F2 * F1  +  /F3 * F2 * /F1  +  F3 * F2 * /F1 * /F0
+LOp1 = /F3 * /F1  +  F3 * F2 * F1  +  F3 * F2 * /F1 * /F0
+LOp2 = /F3 * /F2 * F1  +  F3 * F2 * F1  +  F3 * F2 * /F1 * /F0
+LOp3 = /F3 * /F2 * /F1  +  F3 * F2 * /F1 * F0  +  F3 * F2 * /F0
 
 SOp0 = /F2
 SOp1 = /F3 * F2 * F1  +  F3 * /F2

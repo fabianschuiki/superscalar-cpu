@@ -48,6 +48,9 @@ class Opcode(Enum):
     AND = auto()
     OR = auto()
     XOR = auto()
+    CMP = auto()
+    TEST = auto()
+    FSWAP = auto()
 
     # Pseudo-instructions
     HALT = auto()
@@ -220,6 +223,22 @@ class AssemblyParser:
             self.parse_regex(r',')
             rs = self.parse_register()
             return Instruction(Opcode.XOR, [rd, rs])
+
+        if self.consume_identifier("cmp"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            rs = self.parse_register()
+            return Instruction(Opcode.CMP, [rd, rs])
+
+        if self.consume_identifier("test"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            rs = self.parse_register()
+            return Instruction(Opcode.TEST, [rd, rs])
+
+        if self.consume_identifier("fswap"):
+            rd = self.parse_register()
+            return Instruction(Opcode.FSWAP, [rd])
 
         # Pseudo-instructions
         if self.consume_identifier("halt"):
@@ -465,6 +484,25 @@ class AssemblyPrinter:
             self.print_operand(inst.operands[1])
             return
 
+        if inst.opcode == Opcode.CMP:
+            self.print_opcode("cmp ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
+            return
+
+        if inst.opcode == Opcode.TEST:
+            self.print_opcode("test ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
+            return
+
+        if inst.opcode == Opcode.FSWAP:
+            self.print_opcode("fswap ")
+            self.print_operand(inst.operands[0])
+            return
+
         # Pseudo-instructions
         if inst.opcode == Opcode.HALT:
             self.print_opcode("halt")
@@ -661,6 +699,28 @@ class InstructionEncoder:
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
             self.encode_bits(12, 4, 0b1111)
+            return
+
+        if inst.opcode == Opcode.CMP:
+            self.encode_bits(0, 4, 0x4)
+            self.encode_rd(inst.operands[0])
+            self.encode_rs(inst.operands[1])
+            self.encode_bits(7, 1, 0b1)
+            self.encode_bits(12, 4, 0b0010)
+            return
+
+        if inst.opcode == Opcode.TEST:
+            self.encode_bits(0, 4, 0x4)
+            self.encode_rd(inst.operands[0])
+            self.encode_rs(inst.operands[1])
+            self.encode_bits(7, 1, 0b1)
+            self.encode_bits(12, 4, 0b1101)
+            return
+
+        if inst.opcode == Opcode.FSWAP:
+            self.encode_bits(0, 4, 0x4)
+            self.encode_rd(inst.operands[0])
+            self.encode_bits(12, 4, 0b1100)
             return
 
         # Pseudo-instructions
