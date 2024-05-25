@@ -1,28 +1,30 @@
-Op     Func   COp       SOp       LOp
+Op     Func    COp       SOp       LOp
 
-ADD    0000   00 ZERO   01 RD     1010 RS
-ADDC   0001   11 CF     01 RD     1010 RS
-SUB    0010   01 ONE    01 RD     0101 ~RS
-SUBC   0011   11 CF     01 RD     0101 ~RS
-NOT    0100   00 ZERO   00 ZERO   0011 ~RD
-NEG    0101   01 ONE    00 ZERO   0011 ~RD
-SHLL   0110   00 ZERO   10 SHL    0000 ZERO
-SHLC   0111   11 CF     10 SHL    0000 ZERO
-SHRL   1000   00 ZERO   11 SHR    0000 ZERO
-SHRC   1001   11 CF     11 SHR    0000 ZERO
-SHRA   1010   10 SIGN   11 SHR    0000 ZERO
-FSWAP  1100   00 ZERO   00 ZERO   1111 FSWAP
-AND    1101   00 ZERO   00 ZERO   1000 AND
-OR     1110   00 ZERO   00 ZERO   1110 OR
-XOR    1111   00 ZERO   00 ZERO   0110 XOR
+ADD    00000   00 ZERO   01 RD     1010 RS
+ADDC   00001   11 CF     01 RD     1010 RS
+SUB    00010   01 ONE    01 RD     0101 ~RS
+SUBC   00011   11 CF     01 RD     0101 ~RS
+NOT    00100   00 ZERO   00 ZERO   0011 ~RD
+NEG    00101   01 ONE    00 ZERO   0011 ~RD
+SHLL   00110   00 ZERO   10 SHL    0000 ZERO
+SHLC   00111   11 CF     10 SHL    0000 ZERO
+SHRL   01000   00 ZERO   11 SHR    0000 ZERO
+SHRC   01001   11 CF     11 SHR    0000 ZERO
+SHRA   01010   10 SIGN   11 SHR    0000 ZERO
+FSWAP  01100   00 ZERO   00 ZERO   1111 FSWAP
+AND    01101   00 ZERO   00 ZERO   1000 AND
+OR     01110   00 ZERO   00 ZERO   1110 OR
+XOR    01111   00 ZERO   00 ZERO   0110 XOR
+CMV    1----   00 ZERO   00 ZERO   1100 RD  # if CondMatch=0
+CMV    1----   00 ZERO   00 ZERO   1010 RS  # if CondMatch=1
 
-LOp0 = /F3 * /F2 * F1  +  /F3 * F2 * /F1  +  F3 * F2 * /F1 * /F0
-LOp1 = /F3 * /F1  +  F3 * F2 * F1  +  F3 * F2 * /F1 * /F0
-LOp2 = /F3 * /F2 * F1  +  F3 * F2 * F1  +  F3 * F2 * /F1 * /F0
-LOp3 = /F3 * /F2 * /F1  +  F3 * F2 * /F1 * F0  +  F3 * F2 * /F0
+LOp0 = /F4 * /F3 * /F2 * F1  +  /F4 * /F3 * F2 * /F1  +  /F4 * F3 * F2 * /F1 * /F0
+LOp1 = /F4 * /F3 * /F1  +  /F4 * F3 * F2 * F1  +  /F4 * F3 * F2 * /F1 * /F0  +  F4 * CondMatch
+LOp2 = /F4 * /F3 * /F2 * F1  +  /F4 * F3 * F2 * F1  +  /F4 * F3 * F2 * /F1 * /F0  +  F4 * /CondMatch
+LOp3 = /F4 * /F3 * /F2 * /F1  +  /F4 * F3 * F2 * /F1 * F0  +  /F4 * F3 * F2 * /F0  +  F4
 
-SOp0 = /F2
-SOp1 = /F3 * F2 * F1  +  F3 * /F2
+SOp0 = /F4 * /F2
+SOp1 = /F4 * /F3 * F2 * F1  +  /F4 * F3 * /F2
 
-COp0 = /F2 * /F1 * F0  +  /F3 * /F2 * F1  +  /F3 * F2 * F0
-COp1 = /F3 * /F2 * F0  +  /F3 * F2 * F1 * F0  +  F3 * /F2 * /F1 * F0  +  F3 * /F2 * F1 * /F0
+COp0 = /F4 * /F2 * /F1 * F0  +  /F4 * /F3 * /F2 * F1  +  /F4 * /F3 * F2 * F0
+COp1 = /F4 * /F3 * /F2 * F0  +  /F4 * /F3 * F2 * F1 * F0  +  /F4 * F3 * /F2 * /F1 * F0  +  /F4 * F3 * /F2 * F1 * /F0

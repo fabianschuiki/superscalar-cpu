@@ -10,21 +10,22 @@
 ........ 1.......  -- reg operand 1 write disabled
 ....ssss ........  -- reg operand 2 ("rs", "rs16")
 iiiiiiii ........  -- immediate
-0000.... ........  -- ALU op: ADD
-0001.... ........  -- ALU op: ADDC
-0010.... ........  -- ALU op: SUB
-0011.... ........  -- ALU op: SUBC
-0100.... ........  -- ALU op: NOT
-0101.... ........  -- ALU op: NEG
-0110.... ........  -- ALU op: SHLL
-0111.... ........  -- ALU op: SHLC
-1000.... ........  -- ALU op: SHRL
-1001.... ........  -- ALU op: SHRC
-1010.... ........  -- ALU op: SHRA
-1100.... ........  -- ALU op: FSWAP
-1101.... ........  -- ALU op: AND
-1110.... ........  -- ALU op: OR
-1111.... ........  -- ALU op: XOR
+00000... ........  -- ALU op: ADD
+00010... ........  -- ALU op: ADDC
+00100... ........  -- ALU op: SUB
+00110... ........  -- ALU op: SUBC
+01000... ........  -- ALU op: NOT
+01010... ........  -- ALU op: NEG
+01100... ........  -- ALU op: SHLL
+01110... ........  -- ALU op: SHLC
+10000... ........  -- ALU op: SHRL
+10010... ........  -- ALU op: SHRC
+10100... ........  -- ALU op: SHRA
+11000... ........  -- ALU op: FSWAP
+11010... ........  -- ALU op: AND
+11100... ........  -- ALU op: OR
+11110... ........  -- ALU op: XOR
+cccc1... ........  -- ALU op: CMV with condition code
 
 instructions:
 00000000 00000000  0000  nop
@@ -50,6 +51,7 @@ iiiiiiii 00001001  ii09  jreli +imm
 0010ssss 1ddd0100  2s!4  cmp rd, rs
 1101ssss 1ddd0100  Ds!4  test rd, rs
 11000000 dddd0100  C0d4  fswap rd
+cccc1sss dddd0100  c!d4  cmv.<cond> rd, rs
 
 pseudo-instructions:
 00000000 00001001  0009  halt

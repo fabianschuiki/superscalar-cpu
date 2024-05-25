@@ -7,10 +7,10 @@
    3   | F1       | Input
    4   | F2       | Input
    5   | F3       | Input
-   6   | NC       | Input
+   6   | F4       | Input
    7   | NC       | Input
    8   | NC       | Input
-   9   | NC       | Input
+   9   | CondMatch | Input
   10   | GND      | GND
   11   | NC       | Input
   12   | LOp3     | Output

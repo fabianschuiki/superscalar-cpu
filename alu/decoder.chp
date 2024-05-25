@@ -13,13 +13,13 @@
                           |                 |
                        F3 |  5           16 | SOp1
                           |                 |
-                       NC |  6           15 | LOp0
+                       F4 |  6           15 | LOp0
                           |                 |
                        NC |  7           14 | LOp1
                           |                 |
                        NC |  8           13 | LOp2
                           |                 |
-                       NC |  9           12 | LOp3
+                CondMatch |  9           12 | LOp3
                           |                 |
                       GND | 10           11 | NC
                           -------------------

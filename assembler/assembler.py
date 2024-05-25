@@ -13,6 +13,7 @@ class OperandKind(Enum):
     Imm = auto()
     Reg = auto()
     RegPair = auto()
+    Cond = auto()
 
 
 # An instruction operand, like a register or an immediate value.
@@ -51,12 +52,61 @@ class Opcode(Enum):
     CMP = auto()
     TEST = auto()
     FSWAP = auto()
+    CMV = auto()
 
     # Pseudo-instructions
     HALT = auto()
 
     # Assembler directives
     D_ORG = auto()
+
+
+# A condition code.
+class Condition(Enum):
+    C = auto()
+    NC = auto()
+    Z = auto()
+    NZ = auto()
+    S = auto()
+    NS = auto()
+    O = auto()
+    NO = auto()
+    EQ = auto()
+    NE = auto()
+    UGE = auto()
+    ULT = auto()
+    ULE = auto()
+    UGT = auto()
+    SLT = auto()
+    SGE = auto()
+    SLE = auto()
+    SGT = auto()
+
+    def __str__(self):
+        return self.name
+
+
+CONDITION_BY_NAME = {cond.name.lower(): cond for cond in Condition}
+CONDITION_ENCODING = {
+    Condition.C: 0b0010,
+    Condition.NC: 0b0011,
+    Condition.Z: 0b0100,
+    Condition.NZ: 0b0101,
+    Condition.S: 0b0110,
+    Condition.NS: 0b0111,
+    Condition.O: 0b1000,
+    Condition.NO: 0b1001,
+    Condition.EQ: 0b0100,
+    Condition.NE: 0b0101,
+    Condition.UGE: 0b0010,
+    Condition.ULT: 0b0011,
+    Condition.ULE: 0b1010,
+    Condition.UGT: 0b1011,
+    Condition.SLT: 0b1100,
+    Condition.SGE: 0b1101,
+    Condition.SLE: 0b1110,
+    Condition.SGT: 0b1111,
+}
 
 
 # An assembly instruction, represented by its opcode and list of operands.
@@ -240,6 +290,14 @@ class AssemblyParser:
             rd = self.parse_register()
             return Instruction(Opcode.FSWAP, [rd])
 
+        if self.consume_identifier("cmv"):
+            self.parse_regex(r'\.')
+            cond = self.parse_condition()
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            rs = self.parse_register()
+            return Instruction(Opcode.CMV, [cond, rd, rs])
+
         # Pseudo-instructions
         if self.consume_identifier("halt"):
             return Instruction(Opcode.HALT)
@@ -290,6 +348,13 @@ class AssemblyParser:
         if negative:
             value = -value
         return Operand(OperandKind.Imm, value)
+
+    # Parse a condition code, like `c` or `ugt`.
+    def parse_condition(self) -> Operand:
+        if m := self.consume_regex(r'[a-z]+'):
+            if cond := CONDITION_BY_NAME.get(m[0]):
+                return Operand(OperandKind.Cond, cond)
+        self.error("expected condition code")
 
     # Skip over whitespace and comments.
     def skip(self):
@@ -503,6 +568,14 @@ class AssemblyPrinter:
             self.print_operand(inst.operands[0])
             return
 
+        if inst.opcode == Opcode.CMV:
+            cond = inst.operands[0].value.name.lower()
+            self.print_opcode(f"cmv.{cond} ")
+            self.print_operand(inst.operands[1])
+            self.emit(", ")
+            self.print_operand(inst.operands[2])
+            return
+
         # Pseudo-instructions
         if inst.opcode == Opcode.HALT:
             self.print_opcode("halt")
@@ -517,7 +590,7 @@ class AssemblyPrinter:
         self.emit(f"<{inst}>")
 
     def print_opcode(self, text: str):
-        self.emit(f"    {text:<7s}")
+        self.emit(f"    {text:<9s}")
 
     def print_operand(self,
                       operand: Operand,
@@ -534,6 +607,8 @@ class AssemblyPrinter:
             self.emit(f"r{operand.value}")
         elif operand.kind == OperandKind.RegPair:
             self.emit(f"r{operand.value}r{operand.value + 1}")
+        elif operand.kind == OperandKind.Cond:
+            self.emit(operand.value.name.lower())
 
     def emit(self, text: str):
         self.output += text
@@ -723,6 +798,14 @@ class InstructionEncoder:
             self.encode_bits(12, 4, 0b1100)
             return
 
+        if inst.opcode == Opcode.CMV:
+            self.encode_bits(0, 4, 0x4)
+            self.encode_cond(inst.operands[0])
+            self.encode_rd(inst.operands[1])
+            self.encode_rs(inst.operands[2])
+            self.encode_bits(11, 1, 0b1)
+            return
+
         # Pseudo-instructions
         if inst.opcode == Opcode.HALT:
             self.encode_bits(0, 16, 0x0009)
@@ -774,6 +857,12 @@ class InstructionEncoder:
     def encode_simm8(self, operand: Operand):
         self.check_imm(operand, -128, 128)
         self.encode_bits(8, 8, operand.value & 0xFF)
+
+    # Encode a condition code in the top four bits of the instruction
+    def encode_cond(self, operand: Operand):
+        if operand.kind != OperandKind.Cond:
+            self.error(f"expected cond operand; got {operand}")
+        self.encode_bits(12, 4, CONDITION_ENCODING[operand.value])
 
     # Error if an operand is not an immediate, or the immediate is less than
     # `lower` or greater than or equal to `upper`.

@@ -33,6 +33,24 @@
     cmp r0, r1
     test r2, r2
     fswap r3
+    cmv.c   r0, r1
+    cmv.nc  r0, r1
+    cmv.z   r0, r1
+    cmv.nz  r0, r1
+    cmv.s   r0, r1
+    cmv.ns  r0, r1
+    cmv.o   r0, r1
+    cmv.no  r0, r1
+    cmv.eq  r0, r1
+    cmv.ne  r0, r1
+    cmv.uge r0, r1
+    cmv.ult r0, r1
+    cmv.ule r0, r1
+    cmv.ugt r0, r1
+    cmv.slt r0, r1
+    cmv.sge r0, r1
+    cmv.sle r0, r1
+    cmv.sgt r0, r1
 
     # Load some interesting patterns.
     ldi r0, 0xF0

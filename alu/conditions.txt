@@ -1,0 +1,53 @@
+Comparison Examples
+===================
+cmp a, b       =  a + (-b)
+
+cmp 2, 2       =  00000010 + 11111110  =  1_00000000  CF=1 ZF=1 SF=0 OF=0
+cmp 2, 1       =  00000010 + 11111111  =  1_00000001  CF=1 ZF=0 SF=0 OF=0
+cmp 2, 3       =  00000010 + 11111101  =  0_11111111  CF=0 ZF=0 SF=1 OF=0
+
+cmp -2, -2     =  11111110 + 00000010  =  1_00000000  CF=1 ZF=1 SF=0 OF=0
+cmp -2, -1     =  11111110 + 00000001  =  0_11111111  CF=0 ZF=0 SF=1 OF=0
+cmp -2, -3     =  11111110 + 00000011  =  1_00000001  CF=1 ZF=0 SF=0 OF=0
+cmp 4, -4      =  00000100 + 00000100  =  0_00001000  CF=0 ZF=0 SF=0 OF=0
+cmp -4, 4      =  11111100 + 11111100  =  1_11111000  CF=1 ZF=0 SF=1 OF=0
+cmp 127, -127  =  01111111 + 01111111  =  0_11111110  CF=0 ZF=0 SF=1 OF=1
+cmp -127, 127  =  10000001 + 10000001  =  1_00000010  CF=1 ZF=0 SF=0 OF=1
+
+Condition Codes
+===============
+Name  Code  Mux  Inv  Expression
+-     0000  0    0    true   # always
+-     0001  0    1    false  # never
+c     0010  1    0    CF
+nc    0011  1    1    !CF
+z     0100  2    0    ZF
+nz    0101  2    1    !ZF
+s     0110  3    0    SF
+ns    0111  3    1    !SF
+o     1000  4    0    OF
+no    1001  4    1    !OF
+eq    0100  2    0    ZF
+ne    0101  2    1    !ZF
+uge   0010  1    0    CF
+ult   0011  1    1    !CF
+ule   1010  5    0    !CF | ZF           # !CF | ZF
+ugt   1011  5    1    !(!CF | ZF)        # CF & !ZF
+slt   1100  6    0    SF ^ OF            # SF != OF
+sge   1101  6    1    !(SF ^ OF)         # SF == OF
+sle   1110  7    0    ZF | (SF ^ OF)     # ZF | (SF != OF)
+sgt   1111  7    1    !(ZF | (SF ^ OF))  # !ZF & (SF == OF)
+
+Mux = Code[3:1]
+Inv = Code[0]
+
+Mux Terms
+=========
+0 => true
+1 => CF
+2 => ZF
+3 => SF
+4 => OF
+5 => !CF | ZF
+6 => SF ^ OF
+7 => ZF | (SF ^ OF)

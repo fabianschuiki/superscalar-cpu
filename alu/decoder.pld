@@ -1,20 +1,20 @@
 GAL16V8
 alu-decoder
 
-NC  F0    F1    F2    F3    NC    NC    NC    NC    GND
-NC  LOp3  LOp2  LOp1  LOp0  SOp1  SOp0  COp1  COp0  VCC
+NC  F0    F1    F2    F3    F4    NC    NC    CondMatch  GND
+NC  LOp3  LOp2  LOp1  LOp0  SOp1  SOp0  COp1  COp0       VCC
 
 
-LOp0 = /F3 * /F2 * F1  +  /F3 * F2 * /F1  +  F3 * F2 * /F1 * /F0
-LOp1 = /F3 * /F1  +  F3 * F2 * F1  +  F3 * F2 * /F1 * /F0
-LOp2 = /F3 * /F2 * F1  +  F3 * F2 * F1  +  F3 * F2 * /F1 * /F0
-LOp3 = /F3 * /F2 * /F1  +  F3 * F2 * /F1 * F0  +  F3 * F2 * /F0
+LOp0 = /F4 * /F3 * /F2 * F1  +  /F4 * /F3 * F2 * /F1  +  /F4 * F3 * F2 * /F1 * /F0
+LOp1 = /F4 * /F3 * /F1  +  /F4 * F3 * F2 * F1  +  /F4 * F3 * F2 * /F1 * /F0  +  F4 * CondMatch
+LOp2 = /F4 * /F3 * /F2 * F1  +  /F4 * F3 * F2 * F1  +  /F4 * F3 * F2 * /F1 * /F0  +  F4 * /CondMatch
+LOp3 = /F4 * /F3 * /F2 * /F1  +  /F4 * F3 * F2 * /F1 * F0  +  /F4 * F3 * F2 * /F0  +  F4
 
-SOp0 = /F2
-SOp1 = /F3 * F2 * F1  +  F3 * /F2
+SOp0 = /F4 * /F2
+SOp1 = /F4 * /F3 * F2 * F1  +  /F4 * F3 * /F2
 
-COp0 = /F2 * /F1 * F0  +  /F3 * /F2 * F1  +  /F3 * F2 * F0
-COp1 = /F3 * /F2 * F0  +  /F3 * F2 * F1 * F0  +  F3 * /F2 * /F1 * F0  +  F3 * /F2 * F1 * /F0
+COp0 = /F4 * /F2 * /F1 * F0  +  /F4 * /F3 * /F2 * F1  +  /F4 * /F3 * F2 * F0
+COp1 = /F4 * /F3 * /F2 * F0  +  /F4 * /F3 * F2 * F1 * F0  +  /F4 * F3 * /F2 * /F1 * F0  +  /F4 * F3 * /F2 * F1 * /F0
 
 
 DESCRIPTION
