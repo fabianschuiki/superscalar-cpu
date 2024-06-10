@@ -12,9 +12,9 @@
     ldi r0, 1
     ldi r1, 10
     ldi r2, 100
-    neg r0, r0 # r0 = 11111111 (-1)
-    neg r1, r1 # r1 = 11110110 (-10)
-    neg r2, r2 # r2 = 10011100 (-100)
+    neg r0 # r0 = 11111111 (-1)
+    neg r1 # r1 = 11110110 (-10)
+    neg r2 # r2 = 10011100 (-100)
     nop
 
     # 2) 16 bit left shift (through carry flag)
@@ -112,6 +112,7 @@
     mv r2, r6
     mv r1, r6
     ldi r0, 1
+loop:
     shll r0 # r0 = 00000010
     shll r0 # r0 = 00000100
     shll r0 # r0 = 00001000
@@ -127,4 +128,4 @@
     shrl r0 # r0 = 00000100
     shrl r0 # r0 = 00000010
     shrl r0 # r0 = 00000001
-    jreli -30
+    jreli loop

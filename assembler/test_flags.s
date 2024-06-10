@@ -68,7 +68,7 @@
     ldi r1, 29
     ldi r2, 1
 
-# loop:
+loop:
     add r3, r1
     sub r0, r2  # ZF indicates whether r0 reached 0
     fswap r4    # r4 = {OF,SF,ZF,CF}
@@ -77,7 +77,7 @@
     add r4, r2  # r4 = 2 if ZF else 1
     shll r4     # r4 = 4 if ZF else 2
     jrelr r4    # skip next if ZF
-    jreli -16   # loop
+    jreli loop  # loop
     # r3 = 10010001 (5*29 = 145)
     ldi r1, 0
     ldi r2, 0

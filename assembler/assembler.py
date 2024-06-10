@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import argparse
 import re
 import sys
@@ -14,6 +16,8 @@ class OperandKind(Enum):
     Reg = auto()
     RegPair = auto()
     Cond = auto()
+    Label = auto()
+    Offset = auto()
 
 
 # An instruction operand, like a register or an immediate value.
@@ -59,6 +63,7 @@ class Opcode(Enum):
 
     # Assembler directives
     D_ORG = auto()
+    D_LABEL = auto()
 
 
 # A condition code.
@@ -82,7 +87,7 @@ class Condition(Enum):
     SLE = auto()
     SGT = auto()
 
-    def __str__(self):
+    def __repr__(self) -> str:
         return self.name
 
 
@@ -107,6 +112,16 @@ CONDITION_ENCODING = {
     Condition.SLE: 0b1110,
     Condition.SGT: 0b1111,
 }
+
+
+@dataclass
+class Offset:
+    name: str
+    binding: Optional[Instruction] = None
+    offset: Optional[int] = None
+
+    def __repr__(self) -> str:
+        return self.name
 
 
 # An assembly instruction, represented by its opcode and list of operands.
@@ -176,6 +191,11 @@ class AssemblyParser:
 
     # Parse an instruction.
     def parse_instruction(self) -> Instruction:
+        # Labels
+        if m := self.consume_regex(r'([a-zA-Z0-9_]+):'):
+            label = Operand(OperandKind.Label, m[1])
+            return Instruction(Opcode.D_LABEL, [label])
+
         # Actual instructions
         if self.consume_identifier("nop"):
             return Instruction(Opcode.NOP)
@@ -197,8 +217,8 @@ class AssemblyParser:
             return Instruction(Opcode.JABSR, [rs16])
 
         if self.consume_identifier("jreli"):
-            imm = self.parse_immediate()
-            return Instruction(Opcode.JRELI, [imm])
+            offset = self.parse_offset()
+            return Instruction(Opcode.JRELI, [offset])
 
         if self.consume_identifier("jrelr"):
             rs = self.parse_register()
@@ -349,6 +369,36 @@ class AssemblyParser:
             value = -value
         return Operand(OperandKind.Imm, value)
 
+    # Parse a relative jump offset, like `42` or `label`.
+    def parse_offset(self) -> Operand:
+        # Parse anything that looks like an integer with optional `+` or `-`
+        # sign, or a label like `start` or `4f`.
+        m = self.parse_regex(r'([+-])?([0-9a-zA-Z_]+)',
+                             "expected integer or label")
+        sign = m[1]
+        text = m[2]
+
+        # Handle integers.
+        base = None
+        if m := re.match(r'^[0-9_]+$', text):
+            base = 10
+        elif m := re.match(r'^0x[0-9a-fA-F_]+$', text):
+            base = 16
+        elif m := re.match(r'^0o[0-7_]+$', text):
+            base = 8
+        elif m := re.match(r'^0b[0-1_]+$', text):
+            base = 2
+        if base is not None:
+            value = int(text.replace("_", ""), base)
+            if sign == "-":
+                value = -value
+            return Operand(OperandKind.Imm, value)
+        if sign is not None:
+            self.error(f"expected integer after `{sign}`")
+
+        # Otherwise this is a label.
+        return Operand(OperandKind.Offset, Offset(text))
+
     # Parse a condition code, like `c` or `ugt`.
     def parse_condition(self) -> Operand:
         if m := self.consume_regex(r'[a-z]+'):
@@ -455,9 +505,13 @@ class AssemblyPrinter:
         if inst.opcode == Opcode.JRELI:
             self.print_opcode("jreli ")
             self.print_operand(inst.operands[0], hint_relative=True)
-            if inst.address is not None:
-                target_addr = inst.address + inst.operands[0].value
-                self.emit(f"  # {target_addr:04X}")
+            offset = None
+            if isinstance(inst.operands[0].value, Offset):
+                offset = inst.operands[0].value.offset
+            else:
+                offset = inst.operands[0].value
+            if inst.address is not None and offset is not None:
+                self.emit(f"  # {inst.address+offset:04X}")
             return
 
         if inst.opcode == Opcode.JRELR:
@@ -587,6 +641,11 @@ class AssemblyPrinter:
             self.print_operand(inst.operands[0], hint_addr=True)
             return
 
+        if inst.opcode == Opcode.D_LABEL:
+            self.emit(inst.operands[0].value)
+            self.emit(":")
+            return
+
         self.emit(f"<{inst}>")
 
     def print_opcode(self, text: str):
@@ -609,9 +668,83 @@ class AssemblyPrinter:
             self.emit(f"r{operand.value}r{operand.value + 1}")
         elif operand.kind == OperandKind.Cond:
             self.emit(operand.value.name.lower())
+        elif operand.kind == OperandKind.Offset:
+            self.emit(operand.value.name)
+        else:
+            self.emit(f"<{operand}>")
 
     def emit(self, text: str):
         self.output += text
+
+
+# Utility to resolve names in expressions.
+@dataclass
+class Resolver:
+    # A map of label names to the directives that define them.
+    labels: Dict[str, Instruction] = field(default_factory=dict)
+    # A map of relative labels to the list of directives that define that label.
+    relative_labels: Dict[str, List[Tuple[int, Instruction]]] = field(
+        default_factory=dict)
+
+    def resolve_program(self, program: List[Instruction]):
+        # Register the labels in the program.
+        for index, inst in enumerate(program):
+            if inst.opcode == Opcode.D_LABEL:
+                self.register_label(index, inst)
+
+        # Resolve the labels in instructions.
+        for index, inst in enumerate(program):
+            self.resolve_instruction(index, inst)
+
+    def register_label(self, index: int, inst: Instruction):
+        label: str = inst.operands[0].value
+
+        # If the label consists only of digits, like `42:`, treat it as a
+        # relative label. It may have multiple definitions and instructions
+        # always refer to the closest definition before or after. We therefore
+        # keep an entire list of these relative labels.
+        if label.isdigit():
+            self.relative_labels.setdefault(label, []).append((index, inst))
+            return
+
+        # Otherwise treat this as an absolute label with a unique name. If the
+        # name already exists, emit an error.
+        if label in self.labels:
+            error(f"label `{label}` already defined", inst)
+        self.labels[label] = inst
+
+    def resolve_instruction(self, index: int, inst: Instruction):
+        for operand in inst.operands:
+            if operand.kind == OperandKind.Offset:
+                self.resolve_offset(index, inst, operand.value)
+
+    def resolve_offset(self, index: int, inst: Instruction, offset: Offset):
+        # Handle relative labels of the form `2f` or `1b`. The `f` or `b` suffix
+        # indicates whether we pick the first occurrence of the label before or
+        # following the current instruction.
+        if m := re.match(r'^([0-9]+)([bf])$', offset.name):
+            label = m[1]
+            labels = self.relative_labels.get(label) or []
+            if m[2] == "f":
+                # Use the first label with index after the current instruction.
+                for label_index, label_inst in labels:
+                    if label_index >= index:
+                        offset.binding = label_inst
+                        return
+            else:
+                # Use the first label with index before the current instruction.
+                for label_index, label_inst in reversed(labels):
+                    if label_index <= index:
+                        offset.binding = label_inst
+                        return
+            side = "after" if m[2] == "f" else "before"
+            error(f"unknown label `{label}` {side} instruction", inst)
+
+        # Handle regular labels.
+        if label_inst := self.labels.get(offset.name):
+            offset.binding = label_inst
+            return
+        error(f"unknown label `{offset.name}`", inst)
 
 
 # Utility to compute the exact addresses of instructions in the binary.
@@ -634,8 +767,26 @@ class Layouter:
             inst.address = org_address
             return
 
+        if inst.opcode == Opcode.D_LABEL:
+            inst.address = self.current_address
+            return
+
         inst.address = self.current_address
         self.current_address += 2
+
+
+# Utility to evaluate the expressions in a program.
+@dataclass
+class Evaluator:
+
+    def evaluate_program(self, program: List[Instruction]):
+        for inst in program:
+            self.evaluate_instruction(inst)
+
+    def evaluate_instruction(self, inst: Instruction):
+        for operand in inst.operands:
+            if isinstance(operand.value, Offset):
+                operand.value.offset = operand.value.binding.address - inst.address
 
 
 # An encoder that computes the binary encoding for every instruction in a
@@ -812,7 +963,7 @@ class InstructionEncoder:
             return
 
         # Directives
-        if inst.opcode == Opcode.D_ORG:
+        if inst.opcode in (Opcode.D_ORG, Opcode.D_LABEL):
             self.encoding = None
             return
 
@@ -850,13 +1001,13 @@ class InstructionEncoder:
 
     # Encode an immediate operand in the 8 bit immediate field
     def encode_imm8(self, operand: Operand):
-        self.check_imm(operand, -128, 256)
-        self.encode_bits(8, 8, operand.value & 0xFF)
+        value = self.check_imm(operand, -128, 256)
+        self.encode_bits(8, 8, value & 0xFF)
 
     # Encode a signed immediate operand in the 8 bit immediate field
     def encode_simm8(self, operand: Operand):
-        self.check_imm(operand, -128, 128)
-        self.encode_bits(8, 8, operand.value & 0xFF)
+        value = self.check_imm(operand, -128, 128)
+        self.encode_bits(8, 8, value & 0xFF)
 
     # Encode a condition code in the top four bits of the instruction
     def encode_cond(self, operand: Operand):
@@ -866,14 +1017,18 @@ class InstructionEncoder:
 
     # Error if an operand is not an immediate, or the immediate is less than
     # `lower` or greater than or equal to `upper`.
-    def check_imm(self, operand: Operand, lower: int, upper: int):
-        if operand.kind != OperandKind.Imm:
+    def check_imm(self, operand: Operand, lower: int, upper: int) -> int:
+        if operand.kind == OperandKind.Imm:
+            value = operand.value
+        elif operand.kind == OperandKind.Offset:
+            value = operand.value.offset
+        else:
             self.error(f"expected immediate operand; got {operand}")
-        value = operand.value
         if value < lower or value >= upper:
             self.error(
                 f"immediate value {value} is out of bounds; expected {lower} <= value < {upper}"
             )
+        return value
 
 
 # Convert a list of instructions to their binary representation. The
@@ -940,8 +1095,14 @@ parser = AssemblyParser()
 for i in args.inputs:
     parser.parse_file(i)
 
+# Resolve the names of labels.
+Resolver().resolve_program(parser.program)
+
 # Compute the addresses of each instruction.
 Layouter().layout_program(parser.program)
+
+# Evaluate all expressions.
+Evaluator().evaluate_program(parser.program)
 
 # Compute the binary encoding of each instruction.
 InstructionEncoder().encode_program(parser.program)
