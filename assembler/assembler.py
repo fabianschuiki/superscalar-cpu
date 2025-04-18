@@ -334,12 +334,12 @@ class AssemblyParser:
         idx = int(self.parse_regex(r'r([0-6])\b', "expected a register")[1])
         return Operand(OperandKind.Reg, idx)
 
-    # Parse a register pair, like `r0r1`.
+    # Parse a register pair, like `r1r0`.
     def parse_register_pair(self) -> Operand:
         m = self.parse_regex(r'r([0-6])r([0-6])\b',
                              "expected a 16 bit register pair")
-        lo = int(m[1])
-        hi = int(m[2])
+        lo = int(m[2])
+        hi = int(m[1])
         if hi != lo + 1:
             self.error(
                 f"registers in 16 bit register pair must be consecutive; got {m[0]}"
@@ -665,7 +665,7 @@ class AssemblyPrinter:
         elif operand.kind == OperandKind.Reg:
             self.emit(f"r{operand.value}")
         elif operand.kind == OperandKind.RegPair:
-            self.emit(f"r{operand.value}r{operand.value + 1}")
+            self.emit(f"r{operand.value + 1}r{operand.value}")
         elif operand.kind == OperandKind.Cond:
             self.emit(operand.value.name.lower())
         elif operand.kind == OperandKind.Offset:
@@ -999,17 +999,17 @@ class InstructionEncoder:
             self.error(f"expected rs16 register operand; got {operand}")
         self.encode_bits(8, 4, operand.value + 1)
 
-    # Encode an immediate operand in the 8 bit immediate field
+    # Encode an immediate operand in the 8 bit immediate field.
     def encode_imm8(self, operand: Operand):
         value = self.check_imm(operand, -128, 256)
         self.encode_bits(8, 8, value & 0xFF)
 
-    # Encode a signed immediate operand in the 8 bit immediate field
+    # Encode a signed immediate operand in the 8 bit immediate field.
     def encode_simm8(self, operand: Operand):
         value = self.check_imm(operand, -128, 128)
         self.encode_bits(8, 8, value & 0xFF)
 
-    # Encode a condition code in the top four bits of the instruction
+    # Encode a condition code in the top four bits of the instruction.
     def encode_cond(self, operand: Operand):
         if operand.kind != OperandKind.Cond:
             self.error(f"expected cond operand; got {operand}")
