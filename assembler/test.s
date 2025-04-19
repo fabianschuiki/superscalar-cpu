@@ -1,45 +1,22 @@
     # Hello!
     /* Here's some comment
        across multiple lines */
-
-    # Clear registers to zero.
-    ldi r0, 0x00  # load initial zero
-    mv r1, r0
-    mv r2, r1
-    mv r3, r2
-    mv r4, r3
-    mv r5, r4
-    mv r6, r5
 1:
-    jreli +18  # 0x0020
+    jreli +32  # 0x0020
     jreli add  # 0x0020
     jreli 1f   # 0x0020
-    jreli 1b   # 0x000E
+    jreli 1b   # 0x0000
 
 .org 0x20
 add:
 1:
 _start:
-    # ALU
-    ldi r0, 9
-    ldi r1, 10
-    add r1, r0
-    sub r0, r1
-    addc r2, r3
-    subc r4, r5
-    not r0
-    neg r0
-    shll r0
-    shlc r1
-    shrl r2
-    shrc r3
-    shra r4
-    and r0, r1
-    or r2, r3
-    xor r4, r5
-    cmp r0, r1
-    test r2, r2
-    fswap r3
+
+    # Basics
+    nop
+    mv  r0, r1
+    ldi r0, 42
+
     cmv.c   r0, r1
     cmv.nc  r0, r1
     cmv.z   r0, r1
@@ -59,44 +36,64 @@ _start:
     cmv.sle r0, r1
     cmv.sgt r0, r1
 
-    # Load some interesting patterns.
-    ldi r0, 0xF0
-    ldi r1, 0x12
-    ldi r2, 0xBA
-    ldi r3, 0x0F
-    ldi r4, 0x81
-    ldi r5, 0x42
-    ldi r6, 0xFF
+    cldi.c   r0, 4
+    cldi.nc  r0, 4
+    cldi.z   r0, 4
+    cldi.nz  r0, 4
+    cldi.s   r0, 4
+    cldi.ns  r0, 4
+    cldi.o   r0, 4
+    cldi.no  r0, 4
+    cldi.eq  r0, 4
+    cldi.ne  r0, -4
+    cldi.uge r0, -4
+    cldi.ult r0, -4
+    cldi.ule r0, -4
+    cldi.ugt r0, -4
+    cldi.slt r0, -4
+    cldi.sge r0, -4
+    cldi.sle r0, -4
+    cldi.sgt r0, -4
 
-    # Test a relative jump with register.
-    ldi r0, 6
-    jrelr r0  # 0x002C
-    nop
-    nop
+    # Branches
+    jreli -6
+    jreli +6
+    jrelr r0
+    jabsr r1r0
 
-    # Test 16 bit absolute jump.
-    ldi r0, 0x40
-    ldi r1, 0xF0
-    jabsr r0r1  # 0xF040
-    halt  # never reached
+    # Unary Arithmetic
+    not   r0
+    neg   r0
+    shll  r0
+    shlc  r0
+    shrl  r0
+    shrc  r0
+    shra  r0
+    fswap r0
 
-.org 0xF040
-loop:
-    # Interesting pattern loop.
-    ldi r0, 0x01
-    ldi r1, 0x02
-    ldi r2, 0x04
-    ldi r3, 0x08
-    ldi r4, 0x10
-    ldi r5, 0x20
-    ldi r6, 0x40
-    nop
-    ldi r0, 0x80
-    ldi r1, 0x40
-    ldi r2, 0x20
-    ldi r3, 0x10
-    ldi r4, 0x08
-    ldi r5, 0x04
-    ldi r6, 0x02
-    nop
-    jreli loop  # 0xF040
+    # Binary Arithmetic
+    add   r0, r1
+    addi  r0, 42
+    addi  r0, -42
+    addc  r0, r1
+    addci r0, 5
+    addci r0, -5
+    sub   r0, r1
+    subc  r0, r1
+    and   r0, r1
+    andi  r0, 42
+    andi  r0, -42
+    or    r0, r1
+    ori   r0, 42
+    ori   r0, -42
+    xor   r0, r1
+    xori  r0, 3
+    xori  r0, -3
+    cmp   r0, r1
+    cmpi  r0, 4
+    cmpi  r0, -4
+    test  r0, r1
+    testi r0, 42
+    testi r0, -42
+
+    halt

@@ -42,8 +42,10 @@ class Opcode(Enum):
     NOT = auto()
     NEG = auto()
     ADD = auto()
+    ADDI = auto()
     SUB = auto()
     ADDC = auto()
+    ADDCI = auto()
     SUBC = auto()
     SHLL = auto()
     SHLC = auto()
@@ -51,12 +53,18 @@ class Opcode(Enum):
     SHRC = auto()
     SHRA = auto()
     AND = auto()
+    ANDI = auto()
     OR = auto()
+    ORI = auto()
     XOR = auto()
+    XORI = auto()
     CMP = auto()
+    CMPI = auto()
     TEST = auto()
+    TESTI = auto()
     FSWAP = auto()
     CMV = auto()
+    CLDI = auto()
 
     # Pseudo-instructions
     HALT = auto()
@@ -238,6 +246,12 @@ class AssemblyParser:
             rs = self.parse_register()
             return Instruction(Opcode.ADD, [rd, rs])
 
+        if self.consume_identifier("addi"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            imm = self.parse_immediate()
+            return Instruction(Opcode.ADDI, [rd, imm])
+
         if self.consume_identifier("sub"):
             rd = self.parse_register()
             self.parse_regex(r',')
@@ -249,6 +263,12 @@ class AssemblyParser:
             self.parse_regex(r',')
             rs = self.parse_register()
             return Instruction(Opcode.ADDC, [rd, rs])
+
+        if self.consume_identifier("addci"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            imm = self.parse_immediate()
+            return Instruction(Opcode.ADDCI, [rd, imm])
 
         if self.consume_identifier("subc"):
             rd = self.parse_register()
@@ -282,11 +302,23 @@ class AssemblyParser:
             rs = self.parse_register()
             return Instruction(Opcode.AND, [rd, rs])
 
+        if self.consume_identifier("andi"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            imm = self.parse_immediate()
+            return Instruction(Opcode.ANDI, [rd, imm])
+
         if self.consume_identifier("or"):
             rd = self.parse_register()
             self.parse_regex(r',')
             rs = self.parse_register()
             return Instruction(Opcode.OR, [rd, rs])
+
+        if self.consume_identifier("ori"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            imm = self.parse_immediate()
+            return Instruction(Opcode.ORI, [rd, imm])
 
         if self.consume_identifier("xor"):
             rd = self.parse_register()
@@ -294,17 +326,35 @@ class AssemblyParser:
             rs = self.parse_register()
             return Instruction(Opcode.XOR, [rd, rs])
 
+        if self.consume_identifier("xori"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            imm = self.parse_immediate()
+            return Instruction(Opcode.XORI, [rd, imm])
+
         if self.consume_identifier("cmp"):
             rd = self.parse_register()
             self.parse_regex(r',')
             rs = self.parse_register()
             return Instruction(Opcode.CMP, [rd, rs])
 
+        if self.consume_identifier("cmpi"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            imm = self.parse_immediate()
+            return Instruction(Opcode.CMPI, [rd, imm])
+
         if self.consume_identifier("test"):
             rd = self.parse_register()
             self.parse_regex(r',')
             rs = self.parse_register()
             return Instruction(Opcode.TEST, [rd, rs])
+
+        if self.consume_identifier("testi"):
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            imm = self.parse_immediate()
+            return Instruction(Opcode.TESTI, [rd, imm])
 
         if self.consume_identifier("fswap"):
             rd = self.parse_register()
@@ -317,6 +367,14 @@ class AssemblyParser:
             self.parse_regex(r',')
             rs = self.parse_register()
             return Instruction(Opcode.CMV, [cond, rd, rs])
+
+        if self.consume_identifier("cldi"):
+            self.parse_regex(r'\.')
+            cond = self.parse_condition()
+            rd = self.parse_register()
+            self.parse_regex(r',')
+            imm = self.parse_immediate()
+            return Instruction(Opcode.CLDI, [cond, rd, imm])
 
         # Pseudo-instructions
         if self.consume_identifier("halt"):
@@ -536,6 +594,13 @@ class AssemblyPrinter:
             self.print_operand(inst.operands[1])
             return
 
+        if inst.opcode == Opcode.ADDI:
+            self.print_opcode("addi ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
+            return
+
         if inst.opcode == Opcode.SUB:
             self.print_opcode("sub ")
             self.print_operand(inst.operands[0])
@@ -545,6 +610,13 @@ class AssemblyPrinter:
 
         if inst.opcode == Opcode.ADDC:
             self.print_opcode("addc ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
+            return
+
+        if inst.opcode == Opcode.ADDCI:
+            self.print_opcode("addci ")
             self.print_operand(inst.operands[0])
             self.emit(", ")
             self.print_operand(inst.operands[1])
@@ -589,8 +661,22 @@ class AssemblyPrinter:
             self.print_operand(inst.operands[1])
             return
 
+        if inst.opcode == Opcode.ANDI:
+            self.print_opcode("andi ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
+            return
+
         if inst.opcode == Opcode.OR:
             self.print_opcode("or ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
+            return
+
+        if inst.opcode == Opcode.ORI:
+            self.print_opcode("ori ")
             self.print_operand(inst.operands[0])
             self.emit(", ")
             self.print_operand(inst.operands[1])
@@ -603,6 +689,13 @@ class AssemblyPrinter:
             self.print_operand(inst.operands[1])
             return
 
+        if inst.opcode == Opcode.XORI:
+            self.print_opcode("xori ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
+            return
+
         if inst.opcode == Opcode.CMP:
             self.print_opcode("cmp ")
             self.print_operand(inst.operands[0])
@@ -610,8 +703,22 @@ class AssemblyPrinter:
             self.print_operand(inst.operands[1])
             return
 
+        if inst.opcode == Opcode.CMPI:
+            self.print_opcode("cmpi ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
+            return
+
         if inst.opcode == Opcode.TEST:
             self.print_opcode("test ")
+            self.print_operand(inst.operands[0])
+            self.emit(", ")
+            self.print_operand(inst.operands[1])
+            return
+
+        if inst.opcode == Opcode.TESTI:
+            self.print_opcode("testi ")
             self.print_operand(inst.operands[0])
             self.emit(", ")
             self.print_operand(inst.operands[1])
@@ -625,6 +732,14 @@ class AssemblyPrinter:
         if inst.opcode == Opcode.CMV:
             cond = inst.operands[0].value.name.lower()
             self.print_opcode(f"cmv.{cond} ")
+            self.print_operand(inst.operands[1])
+            self.emit(", ")
+            self.print_operand(inst.operands[2])
+            return
+
+        if inst.opcode == Opcode.CLDI:
+            cond = inst.operands[0].value.name.lower()
+            self.print_opcode(f"cldi.{cond} ")
             self.print_operand(inst.operands[1])
             self.emit(", ")
             self.print_operand(inst.operands[2])
@@ -810,151 +925,214 @@ class InstructionEncoder:
             return
 
         if inst.opcode == Opcode.LDI:
-            self.encode_bits(0, 4, 0x8)
+            self.encode_bits(0, 4, 8)
             self.encode_rd(inst.operands[0])
             self.encode_imm8(inst.operands[1])
             return
 
         if inst.opcode == Opcode.MV:
-            self.encode_bits(0, 4, 0x0)
+            self.encode_bits(0, 4, 0)
+            self.encode_bits(12, 4, 1)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
             return
 
         if inst.opcode == Opcode.JABSR:
-            self.encode_bits(0, 8, 0x02)
+            self.encode_bits(0, 4, 0)
+            self.encode_bits(4, 4, 0)
+            self.encode_bits(12, 4, 3)
             self.encode_rs16(inst.operands[0])
             return
 
         if inst.opcode == Opcode.JRELI:
-            self.encode_bits(0, 8, 0x09)
+            self.encode_bits(0, 4, 9)
+            self.encode_bits(4, 4, 0)
             self.encode_simm8(inst.operands[0])
             return
 
         if inst.opcode == Opcode.JRELR:
-            self.encode_bits(0, 8, 0x01)
+            self.encode_bits(0, 4, 0)
+            self.encode_bits(4, 4, 0)
+            self.encode_bits(12, 4, 2)
             self.encode_rs(inst.operands[0])
             return
 
         if inst.opcode == Opcode.NOT:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 0)
+            self.encode_bits(8, 4, 0)
             self.encode_rd(inst.operands[0])
-            self.encode_bits(12, 4, 0b0100)
             return
 
         if inst.opcode == Opcode.NEG:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 0)
+            self.encode_bits(8, 4, 1)
             self.encode_rd(inst.operands[0])
-            self.encode_bits(12, 4, 0b0101)
             return
 
         if inst.opcode == Opcode.ADD:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 1)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
-            self.encode_bits(12, 4, 0b0000)
+            return
+
+        if inst.opcode == Opcode.ADDI:
+            self.encode_bits(0, 4, 12)
+            self.encode_rd(inst.operands[0])
+            self.encode_imm8(inst.operands[1])
             return
 
         if inst.opcode == Opcode.SUB:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 3)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
-            self.encode_bits(12, 4, 0b0010)
             return
 
         if inst.opcode == Opcode.ADDC:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 2)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
-            self.encode_bits(12, 4, 0b0001)
+            return
+
+        if inst.opcode == Opcode.ADDCI:
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 10)
+            self.encode_rd(inst.operands[0])
+            self.encode_simm4(inst.operands[1])
             return
 
         if inst.opcode == Opcode.SUBC:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 4)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
-            self.encode_bits(12, 4, 0b0011)
             return
 
         if inst.opcode == Opcode.SHLL:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 0)
+            self.encode_bits(8, 4, 2)
             self.encode_rd(inst.operands[0])
-            self.encode_bits(12, 4, 0b0110)
             return
 
         if inst.opcode == Opcode.SHLC:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 0)
+            self.encode_bits(8, 4, 3)
             self.encode_rd(inst.operands[0])
-            self.encode_bits(12, 4, 0b0111)
             return
 
         if inst.opcode == Opcode.SHRL:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 0)
+            self.encode_bits(8, 4, 4)
             self.encode_rd(inst.operands[0])
-            self.encode_bits(12, 4, 0b1000)
             return
 
         if inst.opcode == Opcode.SHRC:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 0)
+            self.encode_bits(8, 4, 5)
             self.encode_rd(inst.operands[0])
-            self.encode_bits(12, 4, 0b1001)
             return
 
         if inst.opcode == Opcode.SHRA:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 0)
+            self.encode_bits(8, 4, 6)
             self.encode_rd(inst.operands[0])
-            self.encode_bits(12, 4, 0b1010)
             return
 
         if inst.opcode == Opcode.AND:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 5)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
-            self.encode_bits(12, 4, 0b1101)
+            return
+
+        if inst.opcode == Opcode.ANDI:
+            self.encode_bits(0, 4, 13)
+            self.encode_rd(inst.operands[0])
+            self.encode_imm8(inst.operands[1])
             return
 
         if inst.opcode == Opcode.OR:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 6)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
-            self.encode_bits(12, 4, 0b1110)
+            return
+
+        if inst.opcode == Opcode.ORI:
+            self.encode_bits(0, 4, 14)
+            self.encode_rd(inst.operands[0])
+            self.encode_imm8(inst.operands[1])
             return
 
         if inst.opcode == Opcode.XOR:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 7)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
-            self.encode_bits(12, 4, 0b1111)
+            return
+
+        if inst.opcode == Opcode.XORI:
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 11)
+            self.encode_rd(inst.operands[0])
+            self.encode_simm4(inst.operands[1])
             return
 
         if inst.opcode == Opcode.CMP:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 8)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
-            self.encode_bits(7, 1, 0b1)
-            self.encode_bits(12, 4, 0b0010)
+            return
+
+        if inst.opcode == Opcode.CMPI:
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 12)
+            self.encode_rd(inst.operands[0])
+            self.encode_simm4(inst.operands[1])
             return
 
         if inst.opcode == Opcode.TEST:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 9)
             self.encode_rd(inst.operands[0])
             self.encode_rs(inst.operands[1])
-            self.encode_bits(7, 1, 0b1)
-            self.encode_bits(12, 4, 0b1101)
+            return
+
+        if inst.opcode == Opcode.TESTI:
+            self.encode_bits(0, 4, 15)
+            self.encode_rd(inst.operands[0])
+            self.encode_imm8(inst.operands[1])
             return
 
         if inst.opcode == Opcode.FSWAP:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 0)
+            self.encode_bits(8, 4, 7)
             self.encode_rd(inst.operands[0])
-            self.encode_bits(12, 4, 0b1100)
             return
 
         if inst.opcode == Opcode.CMV:
-            self.encode_bits(0, 4, 0x4)
+            self.encode_bits(0, 4, 2)
             self.encode_cond(inst.operands[0])
             self.encode_rd(inst.operands[1])
             self.encode_rs(inst.operands[2])
-            self.encode_bits(11, 1, 0b1)
+            return
+
+        if inst.opcode == Opcode.CLDI:
+            self.encode_bits(0, 4, 3)
+            self.encode_cond(inst.operands[0])
+            self.encode_rd(inst.operands[1])
+            self.encode_simm4(inst.operands[2])
             return
 
         # Pseudo-instructions
@@ -1008,6 +1186,11 @@ class InstructionEncoder:
     def encode_simm8(self, operand: Operand):
         value = self.check_imm(operand, -128, 128)
         self.encode_bits(8, 8, value & 0xFF)
+
+    # Encode a signed immediate operand in the 4 bit immediate field.
+    def encode_simm4(self, operand: Operand):
+        value = self.check_imm(operand, -8, 8)
+        self.encode_bits(8, 4, value & 0xF)
 
     # Encode a condition code in the top four bits of the instruction.
     def encode_cond(self, operand: Operand):
