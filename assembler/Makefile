@@ -1,2 +1,2 @@
-%.bin: %.s
-	./assembler.py $< -o $@ -s 131072
+%.bin: %.s assembler.py
+	./assembler.py $< -o $@ -s 65536

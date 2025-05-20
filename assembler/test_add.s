@@ -42,6 +42,7 @@
     nop
 
     # Infinite loop counting up.
+loop:
     addi r0, 1
     addi r1, 2
     addi r2, 3
@@ -49,4 +50,4 @@
     addi r4, 5
     addi r5, 6
     addi r6, 7
-    jreli -14
+    j loop

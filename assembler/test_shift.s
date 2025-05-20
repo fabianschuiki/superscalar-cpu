@@ -128,4 +128,4 @@ loop:
     shrl r0 # r0 = 00000100
     shrl r0 # r0 = 00000010
     shrl r0 # r0 = 00000001
-    jreli loop
+    j loop

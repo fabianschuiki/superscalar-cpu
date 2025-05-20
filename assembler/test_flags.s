@@ -76,8 +76,8 @@ loop:
     and r4, r2  # r4 = ZF
     add r4, r2  # r4 = 2 if ZF else 1
     shll r4     # r4 = 4 if ZF else 2
-    jrelr r4    # skip next if ZF
-    jreli loop  # loop
+    jro r4      # skip next if ZF
+    j loop      # loop
     # r3 = 10010001 (5*29 = 145)
     ldi r1, 0
     ldi r2, 0
