@@ -70,6 +70,8 @@ _start:
     shrc  r0
     shra  r0
     fswap r0
+    fr    r0
+    fw    r0
 
     # Binary Arithmetic
     add   r0, r1

@@ -63,6 +63,8 @@ class Opcode(Enum):
     TEST = auto()
     TESTI = auto()
     FSWAP = auto()
+    FR = auto()
+    FW = auto()
     CMV = auto()
     CLDI = auto()
 
@@ -359,6 +361,14 @@ class AssemblyParser:
         if self.consume_identifier("fswap"):
             rd = self.parse_register()
             return Instruction(Opcode.FSWAP, [rd])
+
+        if self.consume_identifier("fr"):
+            rd = self.parse_register()
+            return Instruction(Opcode.FR, [rd])
+
+        if self.consume_identifier("fw"):
+            rd = self.parse_register()
+            return Instruction(Opcode.FW, [rd])
 
         if self.consume_identifier("cmv"):
             self.parse_regex(r'\.')
@@ -726,6 +736,16 @@ class AssemblyPrinter:
 
         if inst.opcode == Opcode.FSWAP:
             self.print_opcode("fswap ")
+            self.print_operand(inst.operands[0])
+            return
+
+        if inst.opcode == Opcode.FR:
+            self.print_opcode("fr ")
+            self.print_operand(inst.operands[0])
+            return
+
+        if inst.opcode == Opcode.FW:
+            self.print_opcode("fw ")
             self.print_operand(inst.operands[0])
             return
 
@@ -1118,6 +1138,20 @@ class InstructionEncoder:
             self.encode_bits(0, 4, 1)
             self.encode_bits(12, 4, 0)
             self.encode_bits(8, 4, 7)
+            self.encode_rd(inst.operands[0])
+            return
+
+        if inst.opcode == Opcode.FR:
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 0)
+            self.encode_bits(8, 4, 8)
+            self.encode_rd(inst.operands[0])
+            return
+
+        if inst.opcode == Opcode.FW:
+            self.encode_bits(0, 4, 1)
+            self.encode_bits(12, 4, 0)
+            self.encode_bits(8, 4, 9)
             self.encode_rd(inst.operands[0])
             return
 

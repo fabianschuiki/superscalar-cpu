@@ -83,8 +83,10 @@ class Decoded:
     fuop: int = 0
 
 
-def alu_unary(op: ALUOp | int, flags: FlagsMode = FlagsMode.W) -> Decoded:
-    return Decoded(rd=RdMode.RW, flags=flags, fuid=FU.ALU, fuop=op)
+def alu_unary(op: ALUOp | int,
+              flags: FlagsMode = FlagsMode.W,
+              rd: RdMode = RdMode.RW) -> Decoded:
+    return Decoded(rd=rd, flags=flags, fuid=FU.ALU, fuop=op)
 
 
 def alu_binary(op: ALUOp | int,
@@ -123,6 +125,8 @@ def decode(inst: int) -> Decoded:
             if func3 == 5: return alu_unary(ALUOp.SHRC, FlagsMode.RW)
             if func3 == 6: return alu_unary(ALUOp.SHRA)
             if func3 == 7: return alu_unary(ALUOp.FSWAP, FlagsMode.RW)
+            if func3 == 8: return alu_unary(ALUOp.FSWAP, FlagsMode.R, RdMode.W)
+            if func3 == 9: return alu_unary(ALUOp.FSWAP, FlagsMode.W, RdMode.R)
 
         # Handle binary ops
         if func1 == 1: return alu_binary(ALUOp.ADD)
