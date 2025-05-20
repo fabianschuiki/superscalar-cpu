@@ -13,9 +13,12 @@ cccciiii dddd0011  cid3  cldi  rd  imm4 flags? 0..3=3  12..15=cond
 iiiiiiii dddd1000  iid8  ldi   rd! imm8        0..3=8
 
 # Branches
-iiiiiiii 00001001  ii09  jreli     imm8        0..3=9            4..7=0
-0010ssss 00000000  2s00  jrelr     rs          0..3=0  12..15=2  4..7=0
-0011ssss 00000000  3s00  jabsr     rs16        0..3=0  12..15=3  4..7=0
+iiiiiiii 00001001  ii09  j         imm8        0..3=9            4..7=0
+0010ssss 00000000  2s00  jro       rs          0..3=0  12..15=2  4..7=0
+0011ssss 00000000  3s00  jr        rs16        0..3=0  12..15=3  4..7=0
+iiiiiiii cccc1001  ii09  b         imm8        0..3=9            4..7=cond
+0010ssss cccc0000  2s00  bro       rs          0..3=0  12..15=2  4..7=cond
+0011ssss cccc0000  3s00  br        rs16        0..3=0  12..15=3  4..7=cond
 
 # Unary Arithmetic
 00000000 dddd0001  00d1  not   rd       flags! 0..3=1  12..15=0  8..11=0

@@ -36,9 +36,12 @@ class Opcode(Enum):
     NOP = auto()
     LDI = auto()
     MV = auto()
-    JABSR = auto()
-    JRELI = auto()
-    JRELR = auto()
+    JR = auto()
+    J = auto()
+    JRO = auto()
+    BR = auto()
+    B = auto()
+    BRO = auto()
     NOT = auto()
     NEG = auto()
     ADD = auto()
@@ -222,17 +225,35 @@ class AssemblyParser:
             rs = self.parse_register()
             return Instruction(Opcode.MV, [rd, rs])
 
-        if self.consume_identifier("jabsr"):
+        if self.consume_identifier("jr"):
             rs16 = self.parse_register_pair()
-            return Instruction(Opcode.JABSR, [rs16])
+            return Instruction(Opcode.JR, [rs16])
 
-        if self.consume_identifier("jreli"):
+        if self.consume_identifier("j"):
             offset = self.parse_offset()
-            return Instruction(Opcode.JRELI, [offset])
+            return Instruction(Opcode.J, [offset])
 
-        if self.consume_identifier("jrelr"):
+        if self.consume_identifier("jro"):
             rs = self.parse_register()
-            return Instruction(Opcode.JRELR, [rs])
+            return Instruction(Opcode.JRO, [rs])
+
+        if self.consume_identifier("br"):
+            self.parse_regex(r'\.')
+            cond = self.parse_condition()
+            rs16 = self.parse_register_pair()
+            return Instruction(Opcode.BR, [cond, rs16])
+
+        if self.consume_identifier("b"):
+            self.parse_regex(r'\.')
+            cond = self.parse_condition()
+            offset = self.parse_offset()
+            return Instruction(Opcode.B, [cond, offset])
+
+        if self.consume_identifier("bro"):
+            self.parse_regex(r'\.')
+            cond = self.parse_condition()
+            rs = self.parse_register()
+            return Instruction(Opcode.BRO, [cond, rs])
 
         if self.consume_identifier("not"):
             rd = self.parse_register()
@@ -565,26 +586,39 @@ class AssemblyPrinter:
             self.print_operand(inst.operands[1])
             return
 
-        if inst.opcode == Opcode.JABSR:
-            self.print_opcode("jabsr ")
+        if inst.opcode == Opcode.JR:
+            self.print_opcode("jr ")
             self.print_operand(inst.operands[0])
             return
 
-        if inst.opcode == Opcode.JRELI:
-            self.print_opcode("jreli ")
+        if inst.opcode == Opcode.J:
+            self.print_opcode("j ")
             self.print_operand(inst.operands[0], hint_relative=True)
-            offset = None
-            if isinstance(inst.operands[0].value, Offset):
-                offset = inst.operands[0].value.offset
-            else:
-                offset = inst.operands[0].value
-            if inst.address is not None and offset is not None:
-                self.emit(f"  # {inst.address+offset:04X}")
+            self.print_target_comment(inst, inst.operands[0])
             return
 
-        if inst.opcode == Opcode.JRELR:
-            self.print_opcode("jrelr ")
+        if inst.opcode == Opcode.JRO:
+            self.print_opcode("jro ")
             self.print_operand(inst.operands[0])
+            return
+
+        if inst.opcode == Opcode.BR:
+            cond = inst.operands[0].value.name.lower()
+            self.print_opcode(f"br.{cond} ")
+            self.print_operand(inst.operands[1])
+            return
+
+        if inst.opcode == Opcode.B:
+            cond = inst.operands[0].value.name.lower()
+            self.print_opcode(f"b.{cond} ")
+            self.print_operand(inst.operands[1], hint_relative=True)
+            self.print_target_comment(inst, inst.operands[1])
+            return
+
+        if inst.opcode == Opcode.BRO:
+            cond = inst.operands[0].value.name.lower()
+            self.print_opcode(f"bro.{cond} ")
+            self.print_operand(inst.operands[1])
             return
 
         if inst.opcode == Opcode.NOT:
@@ -783,6 +817,15 @@ class AssemblyPrinter:
 
         self.emit(f"<{inst}>")
 
+    def print_target_comment(self, inst: Instruction, operand: Operand):
+        offset = None
+        if isinstance(operand.value, Offset):
+            offset = operand.value.offset
+        else:
+            offset = operand.value
+        if inst.address is not None and offset is not None:
+            self.emit(f"  # {inst.address+offset:04X}")
+
     def print_opcode(self, text: str):
         self.emit(f"    {text:<9s}")
 
@@ -957,24 +1000,44 @@ class InstructionEncoder:
             self.encode_rs(inst.operands[1])
             return
 
-        if inst.opcode == Opcode.JABSR:
+        if inst.opcode == Opcode.JR:
             self.encode_bits(0, 4, 0)
             self.encode_bits(4, 4, 0)
             self.encode_bits(12, 4, 3)
             self.encode_rs16(inst.operands[0])
             return
 
-        if inst.opcode == Opcode.JRELI:
+        if inst.opcode == Opcode.J:
             self.encode_bits(0, 4, 9)
             self.encode_bits(4, 4, 0)
             self.encode_simm8(inst.operands[0])
             return
 
-        if inst.opcode == Opcode.JRELR:
+        if inst.opcode == Opcode.JRO:
             self.encode_bits(0, 4, 0)
             self.encode_bits(4, 4, 0)
             self.encode_bits(12, 4, 2)
             self.encode_rs(inst.operands[0])
+            return
+
+        if inst.opcode == Opcode.BR:
+            self.encode_bits(0, 4, 0)
+            self.encode_cond1(inst.operands[0])
+            self.encode_bits(12, 4, 3)
+            self.encode_rs16(inst.operands[1])
+            return
+
+        if inst.opcode == Opcode.B:
+            self.encode_bits(0, 4, 9)
+            self.encode_cond1(inst.operands[0])
+            self.encode_simm8(inst.operands[1])
+            return
+
+        if inst.opcode == Opcode.BRO:
+            self.encode_bits(0, 4, 0)
+            self.encode_cond1(inst.operands[0])
+            self.encode_bits(12, 4, 2)
+            self.encode_rs(inst.operands[1])
             return
 
         if inst.opcode == Opcode.NOT:
@@ -1157,14 +1220,14 @@ class InstructionEncoder:
 
         if inst.opcode == Opcode.CMV:
             self.encode_bits(0, 4, 2)
-            self.encode_cond(inst.operands[0])
+            self.encode_cond2(inst.operands[0])
             self.encode_rd(inst.operands[1])
             self.encode_rs(inst.operands[2])
             return
 
         if inst.opcode == Opcode.CLDI:
             self.encode_bits(0, 4, 3)
-            self.encode_cond(inst.operands[0])
+            self.encode_cond2(inst.operands[0])
             self.encode_rd(inst.operands[1])
             self.encode_simm4(inst.operands[2])
             return
@@ -1226,8 +1289,14 @@ class InstructionEncoder:
         value = self.check_imm(operand, -8, 8)
         self.encode_bits(8, 4, value & 0xF)
 
+    # Encode a condition code in the `rd` field of the instruction.
+    def encode_cond1(self, operand: Operand):
+        if operand.kind != OperandKind.Cond:
+            self.error(f"expected cond operand; got {operand}")
+        self.encode_bits(4, 4, CONDITION_ENCODING[operand.value])
+
     # Encode a condition code in the top four bits of the instruction.
-    def encode_cond(self, operand: Operand):
+    def encode_cond2(self, operand: Operand):
         if operand.kind != OperandKind.Cond:
             self.error(f"expected cond operand; got {operand}")
         self.encode_bits(12, 4, CONDITION_ENCODING[operand.value])

@@ -2,10 +2,14 @@
     /* Here's some comment
        across multiple lines */
 1:
-    jreli +32  # 0x0020
-    jreli add  # 0x0020
-    jreli 1f   # 0x0020
-    jreli 1b   # 0x0000
+    j   +32  # 0x0020
+    j   add  # 0x0020
+    j   1f   # 0x0020
+    j   1b   # 0x0000
+    b.z +24  # 0x0020
+    b.z add  # 0x0020
+    b.z 1f   # 0x0020
+    b.z 1b   # 0x0000
 
 .org 0x20
 add:
@@ -56,10 +60,67 @@ _start:
     cldi.sgt r0, -4
 
     # Branches
-    jreli -6
-    jreli +6
-    jrelr r0
-    jabsr r1r0
+    j   -6
+    j   +6
+    jro r0
+    jr  r1r0
+
+    b.c   42
+    b.nc  42
+    b.z   42
+    b.nz  42
+    b.s   42
+    b.ns  42
+    b.o   42
+    b.no  42
+    b.eq  42
+    b.ne  -42
+    b.uge -42
+    b.ult -42
+    b.ule -42
+    b.ugt -42
+    b.slt -42
+    b.sge -42
+    b.sle -42
+    b.sgt -42
+
+    bro.c   r0
+    bro.nc  r0
+    bro.z   r0
+    bro.nz  r0
+    bro.s   r0
+    bro.ns  r0
+    bro.o   r0
+    bro.no  r0
+    bro.eq  r0
+    bro.ne  r0
+    bro.uge r0
+    bro.ult r0
+    bro.ule r0
+    bro.ugt r0
+    bro.slt r0
+    bro.sge r0
+    bro.sle r0
+    bro.sgt r0
+
+    br.c   r1r0
+    br.nc  r1r0
+    br.z   r1r0
+    br.nz  r1r0
+    br.s   r1r0
+    br.ns  r1r0
+    br.o   r1r0
+    br.no  r1r0
+    br.eq  r1r0
+    br.ne  r1r0
+    br.uge r1r0
+    br.ult r1r0
+    br.ule r1r0
+    br.ugt r1r0
+    br.slt r1r0
+    br.sge r1r0
+    br.sle r1r0
+    br.sgt r1r0
 
     # Unary Arithmetic
     not   r0

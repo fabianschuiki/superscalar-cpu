@@ -42,16 +42,10 @@ class FlagsMode(IntEnum):
     RW = 0b00
 
 
-class PcMode(IntEnum):
-    Step = 0b00
-    RelJump = 0b01
-    AbsJump = 0b10
-    Reserved = 0b11
-
-
 class FU(IntEnum):
     Move = 0b00
     ALU = 0b01
+    Branch = 0b10
 
 
 class ALUOp(IntEnum):
@@ -73,12 +67,18 @@ class ALUOp(IntEnum):
     CMV = 0b10000
 
 
+class BranchOp(IntEnum):
+    Step = 0b11 << 4
+    RelJump = 0b10 << 4
+    AbsJump = 0b01 << 4
+    Reserved = 0b00 << 4
+
+
 @dataclass
 class Decoded:
     rd: RdMode = RdMode.Unused
     rs: RsMode = RsMode.Imm4
     flags: FlagsMode = FlagsMode.Unused
-    pc: PcMode = PcMode.Step
     fuid: FU = FU.Move
     fuop: int = 0
 
@@ -108,10 +108,20 @@ def decode(inst: int) -> Decoded:
             return Decoded()
         if func1 == 1:  # mv
             return Decoded(rd=RdMode.W, rs=RsMode.R8, fuid=FU.Move)
-        if func1 == 2 and func2 == 0:  # jro / jrelr
-            return Decoded(rs=RsMode.R8, pc=PcMode.RelJump)
-        if func1 == 3 and func2 == 0:  # jr / jabsr
-            return Decoded(rs=RsMode.R16, pc=PcMode.AbsJump)
+        if func1 == 2 and func2 != 1:  # jro / bro
+            cond = func2  # condition is in 4..7
+            return Decoded(
+                rs=RsMode.R8,
+                flags=FlagsMode.R if cond != 0 else FlagsMode.Unused,
+                fuid=FU.Branch,
+                fuop=BranchOp.RelJump | cond)
+        if func1 == 3 and func2 != 1:  # jr / br
+            cond = func2  # condition is in 4..7
+            return Decoded(
+                rs=RsMode.R16,
+                flags=FlagsMode.R if cond != 0 else FlagsMode.Unused,
+                fuid=FU.Branch,
+                fuop=BranchOp.AbsJump | cond)
 
     # Handle ALU instructions (0..3=1)
     if func0 == 1:
@@ -158,8 +168,12 @@ def decode(inst: int) -> Decoded:
     # Handle instructions with 8 bit immediates (0..3=8..15)
     if func0 == 8:  # ldi
         return Decoded(rd=RdMode.W, rs=RsMode.Imm8, fuid=FU.Move)
-    if func0 == 9 and func2 == 0:  # j / jreli
-        return Decoded(rs=RsMode.Imm8, pc=PcMode.RelJump)
+    if func0 == 9 and func2 != 1:  # j / b
+        cond = func2  # condition is in 4..7
+        return Decoded(rs=RsMode.Imm8,
+                       flags=FlagsMode.R if cond != 0 else FlagsMode.Unused,
+                       fuid=FU.Branch,
+                       fuop=BranchOp.RelJump | cond)
     if func0 == 12:  # addi
         return alu_binary(ALUOp.ADD, rs=RsMode.Imm8)
     if func0 == 13:  # andi
@@ -172,7 +186,7 @@ def decode(inst: int) -> Decoded:
     # If we get here the instruction is unknown. Ideally we should cause an
     # illegal instruction exception here. For the time being, simply set the PC
     # mode to the reserved value 3.
-    return Decoded(pc=PcMode.Reserved)
+    return Decoded(fuid=FU.Branch, fuop=BranchOp.Reserved)
 
 
 rom0_bytes = bytearray(2**16)
@@ -184,7 +198,6 @@ for inst in range(2**16):
     rom0_bytes[inst] |= pack(decoded.rd, 0, 2)
     rom0_bytes[inst] |= pack(decoded.rs, 2, 2)
     rom0_bytes[inst] |= pack(decoded.flags, 4, 2)
-    rom0_bytes[inst] |= pack(decoded.pc, 6, 2)
 
     rom1_bytes[inst] |= pack(decoded.fuop, 0, 6)
     rom1_bytes[inst] |= pack(decoded.fuid, 6, 2)
