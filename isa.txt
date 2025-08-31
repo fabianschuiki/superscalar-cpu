@@ -20,6 +20,10 @@ iiiiiiii cccc1001  ii09  b         imm8        0..3=9            4..7=cond
 0010ssss cccc0000  2s00  bro       rs          0..3=0  12..15=2  4..7=cond
 0011ssss cccc0000  3s00  br        rs16        0..3=0  12..15=3  4..7=cond
 
+# Control and Status Registers
+01000000 dddd0000  40d0  lcdcw rd?             0..3=0  12..15=4  8..11=0
+01000001 dddd0000  41d0  lcddw rd?             0..3=0  12..15=4  8..11=1
+
 # Unary Arithmetic
 00000000 dddd0001  00d1  not   rd       flags! 0..3=1  12..15=0  8..11=0
 00000001 dddd0001  01d1  neg   rd       flags! 0..3=1  12..15=0  8..11=1

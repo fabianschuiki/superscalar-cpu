@@ -122,6 +122,10 @@ _start:
     br.sle r1r0
     br.sgt r1r0
 
+    # Control and Status Registers
+    lcdcw r0
+    lcddw r0
+
     # Unary Arithmetic
     not   r0
     neg   r0

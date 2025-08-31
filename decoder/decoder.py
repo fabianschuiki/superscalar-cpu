@@ -46,6 +46,7 @@ class FU(IntEnum):
     Move = 0b00
     ALU = 0b01
     Branch = 0b10
+    LCD = 0b11
 
 
 class ALUOp(IntEnum):
@@ -122,6 +123,8 @@ def decode(inst: int) -> Decoded:
                 flags=FlagsMode.R if cond != 0 else FlagsMode.Unused,
                 fuid=FU.Branch,
                 fuop=BranchOp.AbsJump | cond)
+        if func1 == 4 and func3 in (0, 1):  # lcdcw / lcddw
+            return Decoded(rd=RdMode.R, fuid=FU.LCD, fuop=func3)
 
     # Handle ALU instructions (0..3=1)
     if func0 == 1:
