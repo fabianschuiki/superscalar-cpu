@@ -44,6 +44,8 @@ class Opcode(Enum):
     BRO = auto()
     LCDCW = auto()
     LCDDW = auto()
+    LCDCR = auto()
+    LCDDR = auto()
     NOT = auto()
     NEG = auto()
     ADD = auto()
@@ -264,6 +266,14 @@ class AssemblyParser:
         if self.consume_identifier("lcddw"):
             rd = self.parse_register()
             return Instruction(Opcode.LCDDW, [rd])
+
+        if self.consume_identifier("lcdcr"):
+            rd = self.parse_register()
+            return Instruction(Opcode.LCDCR, [rd])
+
+        if self.consume_identifier("lcddr"):
+            rd = self.parse_register()
+            return Instruction(Opcode.LCDDR, [rd])
 
         if self.consume_identifier("not"):
             rd = self.parse_register()
@@ -638,6 +648,16 @@ class AssemblyPrinter:
 
         if inst.opcode == Opcode.LCDDW:
             self.print_opcode("lcddw ")
+            self.print_operand(inst.operands[0])
+            return
+
+        if inst.opcode == Opcode.LCDCR:
+            self.print_opcode("lcdcr ")
+            self.print_operand(inst.operands[0])
+            return
+
+        if inst.opcode == Opcode.LCDDR:
+            self.print_opcode("lcddr ")
             self.print_operand(inst.operands[0])
             return
 
@@ -1071,6 +1091,20 @@ class InstructionEncoder:
             self.encode_bits(0, 4, 0)
             self.encode_bits(12, 4, 4)
             self.encode_bits(8, 4, 1)
+            self.encode_rd(inst.operands[0])
+            return
+
+        if inst.opcode == Opcode.LCDCR:
+            self.encode_bits(0, 4, 0)
+            self.encode_bits(12, 4, 4)
+            self.encode_bits(8, 4, 2)
+            self.encode_rd(inst.operands[0])
+            return
+
+        if inst.opcode == Opcode.LCDDR:
+            self.encode_bits(0, 4, 0)
+            self.encode_bits(12, 4, 4)
+            self.encode_bits(8, 4, 3)
             self.encode_rd(inst.operands[0])
             return
 

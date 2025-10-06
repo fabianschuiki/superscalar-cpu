@@ -125,6 +125,8 @@ _start:
     # Control and Status Registers
     lcdcw r0
     lcddw r0
+    lcdcr r0
+    lcddr r0
 
     # Unary Arithmetic
     not   r0

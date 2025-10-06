@@ -125,6 +125,8 @@ def decode(inst: int) -> Decoded:
                 fuop=BranchOp.AbsJump | cond)
         if func1 == 4 and func3 in (0, 1):  # lcdcw / lcddw
             return Decoded(rd=RdMode.R, fuid=FU.LCD, fuop=func3)
+        if func1 == 4 and func3 in (2, 3):  # lcdcr / lcddr
+            return Decoded(rd=RdMode.W, fuid=FU.LCD, fuop=func3)
 
     # Handle ALU instructions (0..3=1)
     if func0 == 1:
